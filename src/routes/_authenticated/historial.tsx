@@ -26,7 +26,7 @@ function Historial() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("study_sessions")
-        .select("id, duration_minutes, explanation_text, created_at, topics(title)")
+        .select("id, duration_minutes, explanation_text, created_at, ai_score, ai_summary, topics(title)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -46,9 +46,16 @@ function Historial() {
         <ul className="space-y-3">
           {sesiones.data.map((s) => (
             <li key={s.id} className="panel space-y-2 p-5">
-              <h2 className="font-semibold">
-                {(s.topics as { title: string } | null)?.title ?? "Tema"}
-              </h2>
+              <div className="flex items-start justify-between gap-3">
+                <h2 className="font-semibold">
+                  {(s.topics as { title: string } | null)?.title ?? "Tema"}
+                </h2>
+                {typeof s.ai_score === "number" && (
+                  <span className="font-pixel shrink-0 rounded-full border-2 border-primary px-2 py-1 text-[10px] text-primary">
+                    {s.ai_score}
+                  </span>
+                )}
+              </div>
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
                 <span className="inline-flex items-center gap-1">
                   <Calendar className="size-3.5" />
@@ -62,6 +69,9 @@ function Historial() {
                   {s.duration_minutes} min
                 </span>
               </div>
+              {s.ai_summary && (
+                <p className="text-sm italic text-muted-foreground">“{s.ai_summary}”</p>
+              )}
               {s.explanation_text && (
                 <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
                   {s.explanation_text}
