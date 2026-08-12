@@ -56,6 +56,35 @@ export type Database = {
         }
         Relationships: []
       }
+      session_claps: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "session_claps_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "study_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       streaks: {
         Row: {
           current_streak: number
@@ -79,11 +108,6 @@ export type Database = {
       }
       study_sessions: {
         Row: {
-          ai_improvements: string[] | null
-          ai_questions: string[] | null
-          ai_score: number | null
-          ai_strengths: string[] | null
-          ai_summary: string | null
           created_at: string
           duration_minutes: number
           explanation_audio_url: string | null
@@ -95,11 +119,6 @@ export type Database = {
           user_id: string
         }
         Insert: {
-          ai_improvements?: string[] | null
-          ai_questions?: string[] | null
-          ai_score?: number | null
-          ai_strengths?: string[] | null
-          ai_summary?: string | null
           created_at?: string
           duration_minutes: number
           explanation_audio_url?: string | null
@@ -111,11 +130,6 @@ export type Database = {
           user_id: string
         }
         Update: {
-          ai_improvements?: string[] | null
-          ai_questions?: string[] | null
-          ai_score?: number | null
-          ai_strengths?: string[] | null
-          ai_summary?: string | null
           created_at?: string
           duration_minutes?: number
           explanation_audio_url?: string | null
