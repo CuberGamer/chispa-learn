@@ -14,6 +14,7 @@ import {
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { getEstadisticas, type Logro } from "@/lib/logros";
 import { cn } from "@/lib/utils";
@@ -81,7 +82,7 @@ function Progreso() {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
       <div className="flex items-center gap-4">
-        <Chispa estado={logrados > 0 ? "emocionado" : "neutral"} size="sm" flotando={false} />
+        <Chispa skin={skin} estado={logrados > 0 ? "emocionado" : "neutral"} size="sm" flotando={false} />
         <div>
           <h1 className="text-2xl font-extrabold">Tu progreso</h1>
           <p className="text-sm text-muted-foreground">
@@ -177,7 +178,7 @@ function Progreso() {
 
           {s?.sesiones === 0 && (
             <div className="panel flex flex-col items-center gap-4 p-8 text-center">
-              <Chispa estado="sorprendido" size="md" />
+              <Chispa skin={skin} estado="sorprendido" size="md" />
               <BurbujaChispa>
                 Todavía no hay nada para mostrar. Hacé tu primera sesión y arrancamos.
               </BurbujaChispa>

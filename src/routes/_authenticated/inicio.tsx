@@ -7,6 +7,7 @@ import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getTemaDelDia } from "@/lib/chispa";
+import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 
 const DURACIONES = [5, 15, 30] as const;
@@ -56,7 +57,7 @@ function Inicio() {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
       <section className="flex flex-col items-center gap-4 text-center">
-        <Chispa estado={streak > 0 ? "emocionado" : "neutral"} size="lg" />
+        <Chispa skin={skin} estado={streak > 0 ? "emocionado" : "neutral"} size="lg" />
         <BurbujaChispa>
           {streak > 1
             ? `¡Racha de ${streak} días, no la cortes!`

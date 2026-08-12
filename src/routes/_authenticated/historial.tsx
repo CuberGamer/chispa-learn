@@ -5,6 +5,7 @@ import { Calendar, Clock } from "lucide-react";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/_authenticated/historial")({
@@ -82,7 +83,7 @@ function Historial() {
         </ul>
       ) : (
         <div className="panel flex flex-col items-center gap-4 p-8 text-center">
-          <Chispa estado="neutral" size="md" />
+          <Chispa skin={skin} estado="neutral" size="md" />
           <BurbujaChispa>Todavía no estudiaste nada. ¡Vamos con el primero!</BurbujaChispa>
           <Button asChild variant="chispa">
             <Link to="/inicio">Ver el tema de hoy</Link>
