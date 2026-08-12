@@ -36,6 +36,9 @@ function LayoutApp() {
             <Link to="/inicio">Inicio</Link>
           </Button>
           <Button asChild variant="ghost" size="sm">
+            <Link to="/biblioteca">Biblioteca</Link>
+          </Button>
+          <Button asChild variant="ghost" size="sm">
             <Link to="/historial">Historial</Link>
           </Button>
           <Button variant="ghost" size="sm" onClick={salir}>
