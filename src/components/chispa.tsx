@@ -14,6 +14,26 @@ const tamanos = {
   xl: 260,
 } as const;
 
+export type ChispaSkin = "clasico" | "violeta" | "cian";
+
+export const SKINS: { id: ChispaSkin; nombre: string }[] = [
+  { id: "clasico", nombre: "Clásico" },
+  { id: "violeta", nombre: "Violeta" },
+  { id: "cian", nombre: "Cian" },
+];
+
+const cuerpos: Record<ChispaSkin, string> = {
+  clasico: "var(--primary)",
+  violeta: "var(--violeta)",
+  cian: "var(--cian)",
+};
+
+const auras: Record<ChispaSkin, string> = {
+  clasico: "oklch(0.9 0.19 100 / 0.4)",
+  violeta: "oklch(0.62 0.24 300 / 0.4)",
+  cian: "oklch(0.82 0.14 200 / 0.4)",
+};
+
 /**
  * Chispa: la mascota. Flat design, contorno grueso y glow neón.
  * Las expresiones cambian con la prop `estado`.
@@ -23,11 +43,13 @@ export function Chispa({
   size = "md",
   className,
   flotando = true,
+  skin = "clasico",
 }: {
   estado?: ChispaEstado;
   size?: keyof typeof tamanos;
   className?: string;
   flotando?: boolean;
+  skin?: ChispaSkin;
 }) {
   const px = tamanos[size];
 
@@ -37,10 +59,9 @@ export function Chispa({
         aria-hidden
         className="animate-pulso absolute inset-0 rounded-full"
         style={{
-          background:
-            estado === "triste"
-              ? "radial-gradient(circle, oklch(0.62 0.24 300 / 0.35), transparent 65%)"
-              : "radial-gradient(circle, oklch(0.9 0.19 100 / 0.4), transparent 65%)",
+          background: `radial-gradient(circle, ${
+            estado === "triste" ? "oklch(0.62 0.24 300 / 0.35)" : auras[skin]
+          }, transparent 65%)`,
         }}
       />
       <svg
@@ -54,7 +75,7 @@ export function Chispa({
         {/* cuerpo de rayito */}
         <path
           d="M64 8H38L24 56h18l-8 38 38-50H50L64 8Z"
-          fill="var(--primary)"
+          fill={cuerpos[skin]}
           stroke="oklch(0.2 0.03 265)"
           strokeWidth="4"
           strokeLinejoin="round"

@@ -7,6 +7,7 @@ import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -38,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/biblioteca")({
 });
 
 function Biblioteca() {
+  const skin = useSkin();
   const navigate = useNavigate();
   const [busqueda, setBusqueda] = useState("");
   const [tagActiva, setTagActiva] = useState<string | null>(null);
@@ -81,7 +83,7 @@ function Biblioteca() {
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-5 pb-16">
       <div className="flex items-center gap-4">
-        <Chispa estado="concentrado" size="sm" flotando={false} />
+        <Chispa skin={skin} estado="concentrado" size="sm" flotando={false} />
         <div>
           <h1 className="text-2xl font-extrabold">Biblioteca</h1>
           <p className="text-sm text-muted-foreground">
@@ -199,7 +201,7 @@ function Biblioteca() {
         </ul>
       ) : (
         <div className="panel flex flex-col items-center gap-4 p-8 text-center">
-          <Chispa estado="sorprendido" size="md" />
+          <Chispa skin={skin} estado="sorprendido" size="md" />
           <BurbujaChispa>
             {busqueda || tagActiva
               ? "No encontré temas con esos filtros. Probá con otra palabra."

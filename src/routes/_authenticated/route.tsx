@@ -27,29 +27,36 @@ function LayoutApp() {
 
   return (
     <div className="min-h-screen">
-      <header className="mx-auto flex w-full max-w-3xl items-center justify-between gap-3 px-5 py-5">
-        <Link to="/inicio" className="font-pixel text-xs text-primary text-glow-amarillo">
-          CHISPA
-        </Link>
-        <nav className="flex items-center gap-1">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/inicio">Inicio</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/biblioteca">Biblioteca</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/historial">Historial</Link>
-          </Button>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/progreso">Progreso</Link>
-          </Button>
+      <header className="mx-auto w-full max-w-3xl px-5 py-5">
+        <div className="flex items-center justify-between gap-3">
+          <Link to="/inicio" className="font-pixel text-xs text-primary text-glow-amarillo">
+            CHISPA
+          </Link>
           <Button variant="ghost" size="sm" onClick={salir}>
             Salir
           </Button>
+        </div>
+        <nav className="-mx-1 mt-2 flex items-center gap-1 overflow-x-auto pb-1">
+          {[
+            { to: "/inicio", label: "Inicio" },
+            { to: "/biblioteca", label: "Biblioteca" },
+            { to: "/historial", label: "Historial" },
+            { to: "/progreso", label: "Progreso" },
+            { to: "/perfil", label: "Perfil" },
+          ].map((item) => (
+            <Button key={item.to} asChild variant="ghost" size="sm" className="shrink-0">
+              <Link
+                to={item.to}
+                activeProps={{ className: "text-primary bg-surface-2" }}
+              >
+                {item.label}
+              </Link>
+            </Button>
+          ))}
         </nav>
       </header>
       <Outlet />
     </div>
   );
 }
+

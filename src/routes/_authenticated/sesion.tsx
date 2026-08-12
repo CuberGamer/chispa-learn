@@ -9,6 +9,7 @@ import { z } from "zod";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
@@ -34,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 });
 
 function Sesion() {
+  const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
   const navigate = useNavigate();
 
@@ -109,7 +111,7 @@ function Sesion() {
           />
         </svg>
         <div className="flex flex-col items-center">
-          <Chispa estado="concentrado" size="md" />
+          <Chispa skin={skin} estado="concentrado" size="md" />
           <p className="font-pixel mt-3 text-3xl text-primary text-glow-amarillo">
             {formatearTiempo(restante)}
           </p>
@@ -158,6 +160,7 @@ function Explicacion({
   minutos: number;
   onListo: () => void;
 }) {
+  const skin = useSkin();
   const [texto, setTexto] = useState("");
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -275,7 +278,7 @@ function Explicacion({
   if (analizando) {
     return (
       <main className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 px-5 pb-16 text-center">
-        <Chispa estado="concentrado" size="lg" />
+        <Chispa skin={skin} estado="concentrado" size="lg" />
         <BurbujaChispa>Estoy leyendo tu explicación con atención…</BurbujaChispa>
         <Loader2 className="size-5 animate-spin text-primary" />
       </main>
@@ -289,7 +292,7 @@ function Explicacion({
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
       <div className="flex items-center gap-4">
-        <Chispa estado="emocionado" size="sm" flotando={false} />
+        <Chispa skin={skin} estado="emocionado" size="sm" flotando={false} />
         <div>
           <h1 className="text-xl font-bold">Contame qué aprendiste</h1>
           <p className="text-sm text-muted-foreground">{titulo}</p>
@@ -331,13 +334,14 @@ function PanelFeedback({
   titulo: string;
   onListo: () => void;
 }) {
+  const skin = useSkin();
   const estado =
     feedback.score >= 80 ? "emocionado" : feedback.score >= 50 ? "neutral" : "sorprendido";
 
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
       <div className="flex flex-col items-center gap-4 text-center">
-        <Chispa estado={estado} size="lg" />
+        <Chispa skin={skin} estado={estado} size="lg" />
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             Feedback de Chispa
