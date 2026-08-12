@@ -160,6 +160,7 @@ function Explicacion({
   minutos: number;
   onListo: () => void;
 }) {
+  const skin = useSkin();
   const [texto, setTexto] = useState("");
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
@@ -333,6 +334,7 @@ function PanelFeedback({
   titulo: string;
   onListo: () => void;
 }) {
+  const skin = useSkin();
   const estado =
     feedback.score >= 80 ? "emocionado" : feedback.score >= 50 ? "neutral" : "sorprendido";
 
