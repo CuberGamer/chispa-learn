@@ -195,7 +195,7 @@ function Explicacion({
       let nuevo = "";
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
-        if (r.isFinal) nuevo += r[0].transcript;
+        if (r?.isFinal && r[0]) nuevo += r[0].transcript;
       }
       if (nuevo) setTexto((t) => (t ? `${t} ${nuevo.trim()}` : nuevo.trim()));
     };
