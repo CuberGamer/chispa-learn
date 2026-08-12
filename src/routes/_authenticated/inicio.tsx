@@ -26,6 +26,7 @@ export const Route = createFileRoute("/_authenticated/inicio")({
 });
 
 function Inicio() {
+  const skin = useSkin();
   const navigate = useNavigate();
   const [minutos, setMinutos] = useState<number>(15);
 

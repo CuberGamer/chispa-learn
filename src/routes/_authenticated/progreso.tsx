@@ -48,6 +48,7 @@ const iconos: Record<string, typeof Zap> = {
 };
 
 function Progreso() {
+  const skin = useSkin();
   const datos = useQuery({
     queryKey: ["progreso"],
     queryFn: async () => {

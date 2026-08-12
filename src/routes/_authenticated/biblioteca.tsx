@@ -39,6 +39,7 @@ export const Route = createFileRoute("/_authenticated/biblioteca")({
 });
 
 function Biblioteca() {
+  const skin = useSkin();
   const navigate = useNavigate();
   const [busqueda, setBusqueda] = useState("");
   const [tagActiva, setTagActiva] = useState<string | null>(null);

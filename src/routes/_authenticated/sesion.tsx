@@ -35,6 +35,7 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 });
 
 function Sesion() {
+  const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
   const navigate = useNavigate();
 

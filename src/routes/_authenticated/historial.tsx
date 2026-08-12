@@ -22,6 +22,7 @@ export const Route = createFileRoute("/_authenticated/historial")({
 });
 
 function Historial() {
+  const skin = useSkin();
   const sesiones = useQuery({
     queryKey: ["historial"],
     queryFn: async () => {
