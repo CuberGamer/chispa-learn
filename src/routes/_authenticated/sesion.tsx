@@ -244,6 +244,16 @@ function Explicacion({
         racha.current > 1 ? `¡Guardado! Racha de ${racha.current} días 🔥` : "¡Guardado! Primera chispa del día",
       );
 
+      try {
+        const nuevos = await evaluarLogros(userId);
+        nuevos.forEach((l) =>
+          toast.success(`🏆 Logro desbloqueado: ${l.name}`, { description: l.description }),
+        );
+      } catch {
+        /* los logros no deben romper el flujo */
+      }
+
+
       setAnalizando(true);
       try {
         const resultado = await pedirFeedback({ data: { sessionId: sesion.id } });
