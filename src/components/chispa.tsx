@@ -62,15 +62,15 @@ export function Chispa({
         {/* ojos */}
         {estado === "concentrado" ? (
           <>
-            <path d="M33 47h9" stroke="oklch(0.2 0.03 265)" strokeWidth="4" strokeLinecap="round" />
-            <path d="M48 44h9" stroke="oklch(0.2 0.03 265)" strokeWidth="4" strokeLinecap="round" />
+            <path d="M34 38h8" stroke="oklch(0.2 0.03 265)" strokeWidth="4" strokeLinecap="round" />
+            <path d="M47 35h8" stroke="oklch(0.2 0.03 265)" strokeWidth="4" strokeLinecap="round" />
           </>
         ) : estado === "triste" ? (
           <>
-            <circle cx="37" cy="49" r="3.4" fill="oklch(0.2 0.03 265)" />
-            <circle cx="52" cy="46" r="3.4" fill="oklch(0.2 0.03 265)" />
+            <circle cx="38" cy="40" r="3.2" fill="oklch(0.2 0.03 265)" />
+            <circle cx="50" cy="37" r="3.2" fill="oklch(0.2 0.03 265)" />
             <path
-              d="M33 43c2-3 6-3 8-1"
+              d="M34 34c2-3 6-3 8-1"
               stroke="oklch(0.2 0.03 265)"
               strokeWidth="3"
               strokeLinecap="round"
@@ -79,37 +79,37 @@ export function Chispa({
           </>
         ) : estado === "sorprendido" ? (
           <>
-            <circle cx="37" cy="48" r="5" fill="oklch(0.2 0.03 265)" />
-            <circle cx="53" cy="45" r="5" fill="oklch(0.2 0.03 265)" />
+            <circle cx="38" cy="39" r="4.4" fill="oklch(0.2 0.03 265)" />
+            <circle cx="50" cy="36" r="4.4" fill="oklch(0.2 0.03 265)" />
           </>
         ) : (
           <>
-            <circle cx="37" cy="48" r="3.6" fill="oklch(0.2 0.03 265)" />
-            <circle cx="52" cy="45" r="3.6" fill="oklch(0.2 0.03 265)" />
+            <circle cx="38" cy="39" r="3.2" fill="oklch(0.2 0.03 265)" />
+            <circle cx="50" cy="36" r="3.2" fill="oklch(0.2 0.03 265)" />
           </>
         )}
         {/* boca */}
         {estado === "triste" ? (
           <path
-            d="M38 62c3-3 8-3 11 0"
+            d="M39 49c2.5-3 6.5-3 9 0"
             stroke="oklch(0.2 0.03 265)"
             strokeWidth="3.5"
             strokeLinecap="round"
             fill="none"
-            transform="rotate(180 43.5 61)"
+            transform="rotate(180 43.5 48)"
           />
         ) : estado === "emocionado" ? (
           <path
-            d="M36 57c4 8 12 7 15 0"
+            d="M38 45c3 6 9 5.5 11 0"
             fill="oklch(0.2 0.03 265)"
             stroke="oklch(0.2 0.03 265)"
             strokeWidth="2"
           />
         ) : estado === "sorprendido" ? (
-          <ellipse cx="44" cy="59" rx="4" ry="5" fill="oklch(0.2 0.03 265)" />
+          <ellipse cx="43" cy="47" rx="3.4" ry="4.2" fill="oklch(0.2 0.03 265)" />
         ) : (
           <path
-            d="M37 58c3 4 9 4 12 0"
+            d="M38 45c2.5 3.5 7.5 3.5 10 0"
             stroke="oklch(0.2 0.03 265)"
             strokeWidth="3.5"
             strokeLinecap="round"
@@ -119,8 +119,8 @@ export function Chispa({
         {/* mejillas cuando está emocionado */}
         {estado === "emocionado" && (
           <>
-            <circle cx="29" cy="55" r="3" fill="var(--cian)" opacity="0.9" />
-            <circle cx="60" cy="52" r="3" fill="var(--cian)" opacity="0.9" />
+            <circle cx="31" cy="44" r="2.6" fill="var(--cian)" opacity="0.9" />
+            <circle cx="57" cy="40" r="2.6" fill="var(--cian)" opacity="0.9" />
           </>
         )}
       </svg>
