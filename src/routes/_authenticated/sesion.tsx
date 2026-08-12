@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
+import { evaluarLogros } from "@/lib/logros";
 import { analizarExplicacion, type FeedbackIA } from "@/lib/feedback.functions";
 
 const searchSchema = z.object({
