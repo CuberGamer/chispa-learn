@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedHistorialRouteImport } from './routes/_authenticated/historial'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
+import { Route as AuthenticatedProgresoRouteImport } from './routes/_authenticated/progreso'
 import { Route as AuthenticatedSesionRouteImport } from './routes/_authenticated/sesion'
 
 const IndexRoute = IndexRouteImport.update({
@@ -46,6 +47,11 @@ const AuthenticatedInicioRoute = AuthenticatedInicioRouteImport.update({
   path: '/inicio',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedProgresoRoute = AuthenticatedProgresoRouteImport.update({
+  id: '/progreso',
+  path: '/progreso',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedSesionRoute = AuthenticatedSesionRouteImport.update({
   id: '/sesion',
   path: '/sesion',
@@ -58,6 +64,7 @@ export interface FileRoutesByFullPath {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/progreso': typeof AuthenticatedProgresoRoute
   '/sesion': typeof AuthenticatedSesionRoute
 }
 export interface FileRoutesByTo {
@@ -66,6 +73,7 @@ export interface FileRoutesByTo {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inicio': typeof AuthenticatedInicioRoute
+  '/progreso': typeof AuthenticatedProgresoRoute
   '/sesion': typeof AuthenticatedSesionRoute
 }
 export interface FileRoutesById {
@@ -76,14 +84,28 @@ export interface FileRoutesById {
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/historial': typeof AuthenticatedHistorialRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
+  '/_authenticated/progreso': typeof AuthenticatedProgresoRoute
   '/_authenticated/sesion': typeof AuthenticatedSesionRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/auth' | '/biblioteca' | '/historial' | '/inicio' | '/sesion'
+    | '/'
+    | '/auth'
+    | '/biblioteca'
+    | '/historial'
+    | '/inicio'
+    | '/progreso'
+    | '/sesion'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/biblioteca' | '/historial' | '/inicio' | '/sesion'
+  to:
+    | '/'
+    | '/auth'
+    | '/biblioteca'
+    | '/historial'
+    | '/inicio'
+    | '/progreso'
+    | '/sesion'
   id:
     | '__root__'
     | '/'
@@ -92,6 +114,7 @@ export interface FileRouteTypes {
     | '/_authenticated/biblioteca'
     | '/_authenticated/historial'
     | '/_authenticated/inicio'
+    | '/_authenticated/progreso'
     | '/_authenticated/sesion'
   fileRoutesById: FileRoutesById
 }
@@ -145,6 +168,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedInicioRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/progreso': {
+      id: '/_authenticated/progreso'
+      path: '/progreso'
+      fullPath: '/progreso'
+      preLoaderRoute: typeof AuthenticatedProgresoRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/sesion': {
       id: '/_authenticated/sesion'
       path: '/sesion'
@@ -159,6 +189,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
   AuthenticatedHistorialRoute: typeof AuthenticatedHistorialRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
+  AuthenticatedProgresoRoute: typeof AuthenticatedProgresoRoute
   AuthenticatedSesionRoute: typeof AuthenticatedSesionRoute
 }
 
@@ -166,6 +197,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
   AuthenticatedHistorialRoute: AuthenticatedHistorialRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
+  AuthenticatedProgresoRoute: AuthenticatedProgresoRoute,
   AuthenticatedSesionRoute: AuthenticatedSesionRoute,
 }
 

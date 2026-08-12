@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
+import { evaluarLogros } from "@/lib/logros";
 import { analizarExplicacion, type FeedbackIA } from "@/lib/feedback.functions";
 
 const searchSchema = z.object({
@@ -243,6 +244,16 @@ function Explicacion({
       toast.success(
         racha.current > 1 ? `¡Guardado! Racha de ${racha.current} días 🔥` : "¡Guardado! Primera chispa del día",
       );
+
+      try {
+        const nuevos = await evaluarLogros(userId);
+        nuevos.forEach((l) =>
+          toast.success(`🏆 Logro desbloqueado: ${l.name}`, { description: l.description }),
+        );
+      } catch {
+        /* los logros no deben romper el flujo */
+      }
+
 
       setAnalizando(true);
       try {
