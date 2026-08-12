@@ -79,6 +79,11 @@ export type Database = {
       }
       study_sessions: {
         Row: {
+          ai_improvements: string[] | null
+          ai_questions: string[] | null
+          ai_score: number | null
+          ai_strengths: string[] | null
+          ai_summary: string | null
           created_at: string
           duration_minutes: number
           explanation_audio_url: string | null
@@ -90,6 +95,11 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_improvements?: string[] | null
+          ai_questions?: string[] | null
+          ai_score?: number | null
+          ai_strengths?: string[] | null
+          ai_summary?: string | null
           created_at?: string
           duration_minutes: number
           explanation_audio_url?: string | null
@@ -101,6 +111,11 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_improvements?: string[] | null
+          ai_questions?: string[] | null
+          ai_score?: number | null
+          ai_strengths?: string[] | null
+          ai_summary?: string | null
           created_at?: string
           duration_minutes?: number
           explanation_audio_url?: string | null
