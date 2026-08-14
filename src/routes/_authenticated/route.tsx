@@ -41,6 +41,7 @@ function LayoutApp() {
             { to: "/inicio", label: "Inicio" },
             { to: "/biblioteca", label: "Biblioteca" },
             { to: "/historial", label: "Historial" },
+            { to: "/comunidad", label: "Comunidad" },
             { to: "/progreso", label: "Progreso" },
             { to: "/perfil", label: "Perfil" },
           ].map((item) => (

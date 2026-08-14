@@ -124,7 +124,7 @@ function Comunidad() {
                 <Chispa
                   skin={(s.profiles?.avatar_chispa_skin as ChispaSkin) ?? "clasico"}
                   estado="neutral"
-                  size="xs"
+                  size="sm"
                   flotando={false}
                 />
                 <div className="min-w-0 flex-1">
