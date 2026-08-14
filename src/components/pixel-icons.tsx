@@ -1,0 +1,127 @@
+/**
+ * Iconos pixel art: grillas de 12x12 dibujadas con rects de 1px.
+ * `shapeRendering="crispEdges"` mantiene el borde duro tipo 8-bit.
+ */
+type Props = { className?: string; size?: number };
+
+function Pix({ d, className, size = 16 }: Props & { d: [number, number, number?, number?][] }) {
+  return (
+    <svg
+      viewBox="0 0 12 12"
+      width={size}
+      height={size}
+      aria-hidden
+      shapeRendering="crispEdges"
+      className={className}
+      fill="currentColor"
+    >
+      {d.map(([x, y, w = 1, h = 1], i) => (
+        <rect key={i} x={x} y={y} width={w} height={h} />
+      ))}
+    </svg>
+  );
+}
+
+export const PixelCalendario = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [1, 2, 10, 1],
+      [1, 3, 1, 8],
+      [10, 3, 1, 8],
+      [1, 10, 10, 1],
+      [3, 0, 1, 2],
+      [8, 0, 1, 2],
+      [3, 5],
+      [5, 5],
+      [7, 5],
+      [3, 7],
+      [5, 7],
+      [7, 7],
+    ]}
+  />
+);
+
+export const PixelReloj = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [4, 1, 4, 1],
+      [3, 2, 1, 1],
+      [8, 2, 1, 1],
+      [2, 3, 1, 6],
+      [9, 3, 1, 6],
+      [3, 9, 1, 1],
+      [8, 9, 1, 1],
+      [4, 10, 4, 1],
+      [5, 4, 1, 3],
+      [6, 6, 2, 1],
+    ]}
+  />
+);
+
+export const PixelAplauso = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [2, 1, 1, 2],
+      [5, 0, 1, 2],
+      [8, 1, 1, 2],
+      [3, 4, 6, 1],
+      [2, 5, 8, 4],
+      [3, 9, 6, 1],
+      [1, 6, 1, 2],
+      [10, 6, 1, 2],
+    ]}
+  />
+);
+
+export const PixelGlobo = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [4, 1, 4, 1],
+      [2, 2, 2, 1],
+      [8, 2, 2, 1],
+      [1, 3, 1, 6],
+      [10, 3, 1, 6],
+      [4, 10, 4, 1],
+      [2, 9, 2, 1],
+      [8, 9, 2, 1],
+      [1, 5, 10, 1],
+      [5, 2, 1, 8],
+    ]}
+  />
+);
+
+export const PixelCandado = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [4, 1, 4, 1],
+      [3, 2, 1, 3],
+      [8, 2, 1, 3],
+      [2, 5, 8, 6],
+      [5, 7, 2, 2],
+    ]}
+  />
+);
+
+export const PixelChispita = (p: Props) => (
+  <Pix
+    {...p}
+    d={[
+      [6, 0, 3, 1],
+      [5, 1, 3, 1],
+      [4, 2, 3, 1],
+      [3, 3, 4, 1],
+      [4, 4, 5, 1],
+      [3, 5, 4, 1],
+      [4, 6, 3, 1],
+      [4, 7, 3, 1],
+      [3, 8, 3, 1],
+      [3, 9, 2, 1],
+      [3, 10, 2, 1],
+    ]}
+  />
+);

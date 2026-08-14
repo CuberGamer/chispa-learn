@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Calendar, Clock, Hand } from "lucide-react";
 import { toast } from "sonner";
 
 import { Chispa, BurbujaChispa, type ChispaSkin } from "@/components/chispa";
+import { PixelAplauso, PixelCalendario, PixelReloj } from "@/components/pixel-icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
@@ -26,16 +26,6 @@ export const Route = createFileRoute("/_authenticated/comunidad")({
   component: Comunidad,
 });
 
-type Fila = {
-  id: string;
-  user_id: string;
-  duration_minutes: number;
-  explanation_text: string | null;
-  created_at: string;
-  topics: { title: string } | null;
-  profiles: { username: string; avatar_chispa_skin: string } | null;
-};
-
 function Comunidad() {
   const miSkin = useSkin();
   const queryClient = useQueryClient();
@@ -46,19 +36,25 @@ function Comunidad() {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id ?? null;
 
-      const [{ data: sesiones, error }, { data: claps }] = await Promise.all([
-        supabase
-          .from("study_sessions")
-          .select(
-            "id, user_id, duration_minutes, explanation_text, created_at, topics(title), profiles(username, avatar_chispa_skin)",
-          )
-          .eq("is_public", true)
-          .order("created_at", { ascending: false })
-          .limit(50),
-        supabase.from("session_claps").select("session_id, user_id"),
-      ]);
+      const { data: sesiones, error } = await supabase
+        .from("study_sessions")
+        .select("id, user_id, duration_minutes, explanation_text, created_at, topics(title)")
+        .eq("is_public", true)
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
 
+      const filas = sesiones ?? [];
+      const autores = [...new Set(filas.map((s) => s.user_id))];
+
+      const [{ data: perfiles }, { data: claps }] = await Promise.all([
+        autores.length
+          ? supabase.from("profiles").select("id, username, avatar_chispa_skin").in("id", autores)
+          : Promise.resolve({ data: [] as { id: string; username: string; avatar_chispa_skin: string }[] }),
+        supabase.from("session_claps").select("session_id, user_id"),
+      ]);
+
+      const perfilPor = new Map((perfiles ?? []).map((p) => [p.id, p]));
       const conteo = new Map<string, number>();
       const mios = new Set<string>();
       (claps ?? []).forEach((c) => {
@@ -66,8 +62,11 @@ function Comunidad() {
         if (c.user_id === userId) mios.add(c.session_id);
       });
 
-      return ((sesiones ?? []) as unknown as Fila[]).map((s) => ({
+      return filas.map((s) => ({
         ...s,
+        titulo: (s.topics as { title: string } | null)?.title ?? "Tema",
+        autor: perfilPor.get(s.user_id)?.username ?? "Alguien",
+        skin: (perfilPor.get(s.user_id)?.avatar_chispa_skin as ChispaSkin) ?? "clasico",
         aplausos: conteo.get(s.id) ?? 0,
         aplaudida: mios.has(s.id),
         propia: s.user_id === userId,
@@ -101,11 +100,11 @@ function Comunidad() {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-5 pb-16">
-      <div className="flex items-center gap-4">
+      <div className="glass flex items-center gap-4 p-5">
         <Chispa skin={miSkin} estado="emocionado" size="sm" flotando={false} />
         <div>
-          <h1 className="text-2xl font-extrabold">Comunidad</h1>
-          <p className="text-sm text-muted-foreground">
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">COMUNIDAD</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
             Explicaciones que otras personas eligieron compartir.
           </p>
         </div>
@@ -119,33 +118,28 @@ function Comunidad() {
       ) : feed.data && feed.data.length > 0 ? (
         <ul className="space-y-4">
           {feed.data.map((s) => (
-            <li key={s.id} className="panel space-y-3 p-5">
+            <li key={s.id} className="glass glass-hover space-y-3 p-5">
               <div className="flex items-start gap-3">
-                <Chispa
-                  skin={(s.profiles?.avatar_chispa_skin as ChispaSkin) ?? "clasico"}
-                  estado="neutral"
-                  size="sm"
-                  flotando={false}
-                />
+                <Chispa skin={s.skin} estado="neutral" size="sm" flotando={false} />
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-semibold">
-                    {s.profiles?.username ?? "Alguien"}
-                    {s.propia && <span className="text-muted-foreground"> (vos)</span>}
+                  <p className="font-pixel truncate text-[10px] text-foreground">
+                    {s.autor}
+                    {s.propia && <span className="text-muted-foreground"> (VOS)</span>}
                   </p>
-                  <p className="truncate text-sm text-primary">{s.topics?.title ?? "Tema"}</p>
+                  <p className="truncate text-sm text-primary">{s.titulo}</p>
                 </div>
               </div>
 
               <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1">
-                  <Calendar className="size-3.5" />
+                <span className="inline-flex items-center gap-1.5">
+                  <PixelCalendario />
                   {new Date(s.created_at).toLocaleDateString("es-AR", {
                     day: "numeric",
                     month: "long",
                   })}
                 </span>
-                <span className="inline-flex items-center gap-1">
-                  <Clock className="size-3.5" />
+                <span className="inline-flex items-center gap-1.5">
+                  <PixelReloj />
                   {s.duration_minutes} min
                 </span>
               </div>
@@ -159,23 +153,24 @@ function Comunidad() {
               <Button
                 variant={s.aplaudida ? "chispa" : "contorno"}
                 size="sm"
+                className="font-pixel text-[10px]"
                 disabled={aplaudir.isPending}
                 onClick={() => aplaudir.mutate({ id: s.id, aplaudida: s.aplaudida })}
               >
-                <Hand className={cn("size-4", s.aplaudida && "text-background")} />
-                {s.aplausos} {s.aplausos === 1 ? "aplauso" : "aplausos"}
+                <PixelAplauso className={cn(s.aplaudida && "text-background")} />
+                {s.aplausos}
               </Button>
             </li>
           ))}
         </ul>
       ) : (
-        <div className="panel flex flex-col items-center gap-4 p-8 text-center">
+        <div className="glass flex flex-col items-center gap-4 p-8 text-center">
           <Chispa skin={miSkin} estado="sorprendido" size="md" />
           <BurbujaChispa>
             Todavía nadie compartió nada. ¡Podés ser la primera chispa del feed!
           </BurbujaChispa>
-          <Button asChild variant="chispa">
-            <Link to="/inicio">Estudiar y compartir</Link>
+          <Button asChild variant="chispa" className="font-pixel text-[10px]">
+            <Link to="/inicio">ESTUDIAR Y COMPARTIR</Link>
           </Button>
         </div>
       )}
