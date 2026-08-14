@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Mic, MicOff, Pause, Play, SkipForward, Sparkles } from "lucide-react";
+import { Mic, MicOff, Pause, Play, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,7 +12,6 @@ import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
-import { analizarExplicacion, type FeedbackIA } from "@/lib/feedback.functions";
 
 const searchSchema = z.object({
   tema: z.string().uuid(),
@@ -164,9 +162,7 @@ function Explicacion({
   const [texto, setTexto] = useState("");
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  const [feedback, setFeedback] = useState<FeedbackIA | null>(null);
-  const [analizando, setAnalizando] = useState(false);
-  const pedirFeedback = useServerFn(analizarExplicacion);
+  const [publico, setPublico] = useState(false);
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
@@ -238,6 +234,7 @@ function Explicacion({
           topic_id: temaId,
           duration_minutes: minutos,
           explanation_text: texto.trim(),
+          is_public: publico,
         })
         .select("id")
         .single();
@@ -258,35 +255,12 @@ function Explicacion({
       }
 
 
-      setAnalizando(true);
-      try {
-        const resultado = await pedirFeedback({ data: { sessionId: sesion.id } });
-        setFeedback(resultado);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "No pude analizar tu explicación");
-        onListo();
-      } finally {
-        setAnalizando(false);
-      }
+      onListo();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
     } finally {
       setGuardando(false);
     }
-  }
-
-  if (analizando) {
-    return (
-      <main className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 px-5 pb-16 text-center">
-        <Chispa skin={skin} estado="concentrado" size="lg" />
-        <BurbujaChispa>Estoy leyendo tu explicación con atención…</BurbujaChispa>
-        <Loader2 className="size-5 animate-spin text-primary" />
-      </main>
-    );
-  }
-
-  if (feedback) {
-    return <PanelFeedback feedback={feedback} titulo={titulo} onListo={onListo} />;
   }
 
   return (
@@ -309,6 +283,21 @@ function Explicacion({
         placeholder="Empezá por lo más importante: ¿de qué se trata el tema? ¿Qué te sorprendió?"
         className="min-h-64 resize-y bg-surface text-base leading-relaxed"
       />
+
+      <label className="panel flex cursor-pointer items-start gap-3 p-4 text-sm">
+        <input
+          type="checkbox"
+          checked={publico}
+          onChange={(e) => setPublico(e.target.checked)}
+          className="mt-0.5 size-4 accent-[var(--primary)]"
+        />
+        <span>
+          <span className="font-semibold">Compartir en la comunidad</span>
+          <span className="block text-xs text-muted-foreground">
+            Tu explicación aparece en el feed público con tu nombre y tu Chispa.
+          </span>
+        </span>
+      </label>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button variant={dictando ? "destructive" : "contorno"} onClick={dictar}>

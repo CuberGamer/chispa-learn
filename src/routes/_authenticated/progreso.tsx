@@ -7,7 +7,6 @@ import {
   Lock,
   Pen,
   Sparkles,
-  Target,
   Trophy,
   Zap,
 } from "lucide-react";
@@ -113,12 +112,6 @@ function Progreso() {
               valor={s ? `${Math.floor(s.minutos / 60)}h ${s.minutos % 60}m` : "0h"}
               label="tiempo investigando"
               tono="cian"
-            />
-            <Metrica
-              icono={Target}
-              valor={s?.promedioScore != null ? `${s.promedioScore}` : "—"}
-              label="promedio de la IA"
-              tono="violeta"
             />
           </section>
 
