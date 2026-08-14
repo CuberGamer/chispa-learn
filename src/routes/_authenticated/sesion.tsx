@@ -1,8 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useServerFn } from "@tanstack/react-start";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Loader2, Mic, MicOff, Pause, Play, SkipForward, Sparkles } from "lucide-react";
+import { Mic, MicOff, Pause, Play, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -13,7 +12,6 @@ import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
-import { analizarExplicacion, type FeedbackIA } from "@/lib/feedback.functions";
 
 const searchSchema = z.object({
   tema: z.string().uuid(),
@@ -164,9 +162,7 @@ function Explicacion({
   const [texto, setTexto] = useState("");
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
-  const [feedback, setFeedback] = useState<FeedbackIA | null>(null);
-  const [analizando, setAnalizando] = useState(false);
-  const pedirFeedback = useServerFn(analizarExplicacion);
+  const [publico, setPublico] = useState(false);
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
@@ -238,6 +234,7 @@ function Explicacion({
           topic_id: temaId,
           duration_minutes: minutos,
           explanation_text: texto.trim(),
+          is_public: publico,
         })
         .select("id")
         .single();
@@ -258,35 +255,12 @@ function Explicacion({
       }
 
 
-      setAnalizando(true);
-      try {
-        const resultado = await pedirFeedback({ data: { sessionId: sesion.id } });
-        setFeedback(resultado);
-      } catch (e) {
-        toast.error(e instanceof Error ? e.message : "No pude analizar tu explicación");
-        onListo();
-      } finally {
-        setAnalizando(false);
-      }
+      onListo();
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
     } finally {
       setGuardando(false);
     }
-  }
-
-  if (analizando) {
-    return (
-      <main className="mx-auto flex w-full max-w-2xl flex-col items-center gap-6 px-5 pb-16 text-center">
-        <Chispa skin={skin} estado="concentrado" size="lg" />
-        <BurbujaChispa>Estoy leyendo tu explicación con atención…</BurbujaChispa>
-        <Loader2 className="size-5 animate-spin text-primary" />
-      </main>
-    );
-  }
-
-  if (feedback) {
-    return <PanelFeedback feedback={feedback} titulo={titulo} onListo={onListo} />;
   }
 
   return (
@@ -310,6 +284,21 @@ function Explicacion({
         className="min-h-64 resize-y bg-surface text-base leading-relaxed"
       />
 
+      <label className="panel flex cursor-pointer items-start gap-3 p-4 text-sm">
+        <input
+          type="checkbox"
+          checked={publico}
+          onChange={(e) => setPublico(e.target.checked)}
+          className="mt-0.5 size-4 accent-[var(--primary)]"
+        />
+        <span>
+          <span className="font-semibold">Compartir en la comunidad</span>
+          <span className="block text-xs text-muted-foreground">
+            Tu explicación aparece en el feed público con tu nombre y tu Chispa.
+          </span>
+        </span>
+      </label>
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Button variant={dictando ? "destructive" : "contorno"} onClick={dictar}>
           {dictando ? <MicOff /> : <Mic />}
@@ -325,68 +314,5 @@ function Explicacion({
   );
 }
 
-function PanelFeedback({
-  feedback,
-  titulo,
-  onListo,
-}: {
-  feedback: FeedbackIA;
-  titulo: string;
-  onListo: () => void;
-}) {
-  const skin = useSkin();
-  const estado =
-    feedback.score >= 80 ? "emocionado" : feedback.score >= 50 ? "neutral" : "sorprendido";
 
-  return (
-    <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
-      <div className="flex flex-col items-center gap-4 text-center">
-        <Chispa skin={skin} estado={estado} size="lg" />
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            Feedback de Chispa
-          </p>
-          <h1 className="mt-1 text-xl font-bold">{titulo}</h1>
-        </div>
-        <p className="font-pixel text-4xl text-primary text-glow-amarillo">{feedback.score}</p>
-        <BurbujaChispa>{feedback.summary}</BurbujaChispa>
-      </div>
 
-      <section className="panel space-y-2 p-5">
-        <h2 className="inline-flex items-center gap-2 text-sm font-bold text-primary">
-          <Sparkles className="size-4" />
-          Lo que explicaste bien
-        </h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/90">
-          {feedback.strengths.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="panel space-y-2 p-5">
-        <h2 className="text-sm font-bold text-accent-foreground">Para afilar la próxima</h2>
-        <ul className="list-disc space-y-1 pl-5 text-sm text-foreground/90">
-          {feedback.improvements.map((s) => (
-            <li key={s}>{s}</li>
-          ))}
-        </ul>
-      </section>
-
-      {feedback.questions.length > 0 && (
-        <section className="panel space-y-2 p-5">
-          <h2 className="text-sm font-bold text-cian text-glow-cian">Preguntas de repaso</h2>
-          <ul className="list-decimal space-y-1 pl-5 text-sm text-foreground/90">
-            {feedback.questions.map((s) => (
-              <li key={s}>{s}</li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      <Button variant="chispa" size="xl" className="w-full" onClick={onListo}>
-        Listo, volver al inicio
-      </Button>
-    </main>
-  );
-}

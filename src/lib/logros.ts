@@ -13,7 +13,6 @@ export type Estadisticas = {
   minutos: number;
   rachaActual: number;
   rachaMaxima: number;
-  promedioScore: number | null;
   explicacionMasLarga: number;
 };
 
@@ -22,7 +21,7 @@ export async function getEstadisticas(userId: string): Promise<Estadisticas> {
   const [{ data: sesiones, error }, { data: racha }] = await Promise.all([
     supabase
       .from("study_sessions")
-      .select("topic_id, duration_minutes, explanation_text, ai_score")
+      .select("topic_id, duration_minutes, explanation_text")
       .eq("user_id", userId),
     supabase
       .from("streaks")
@@ -33,9 +32,6 @@ export async function getEstadisticas(userId: string): Promise<Estadisticas> {
   if (error) throw error;
 
   const filas = sesiones ?? [];
-  const scores = filas
-    .map((s) => s.ai_score)
-    .filter((n): n is number => typeof n === "number");
 
   return {
     sesiones: filas.length,
@@ -43,9 +39,6 @@ export async function getEstadisticas(userId: string): Promise<Estadisticas> {
     minutos: filas.reduce((acc, s) => acc + (s.duration_minutes ?? 0), 0),
     rachaActual: racha?.current_streak ?? 0,
     rachaMaxima: racha?.longest_streak ?? 0,
-    promedioScore: scores.length
-      ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length)
-      : null,
     explicacionMasLarga: filas.reduce(
       (max, s) => Math.max(max, s.explanation_text?.length ?? 0),
       0,

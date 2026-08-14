@@ -28,7 +28,7 @@ function Historial() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("study_sessions")
-        .select("id, duration_minutes, explanation_text, created_at, ai_score, ai_summary, topics(title)")
+        .select("id, duration_minutes, explanation_text, created_at, is_public, topics(title)")
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data ?? [];
@@ -52,9 +52,9 @@ function Historial() {
                 <h2 className="font-semibold">
                   {(s.topics as { title: string } | null)?.title ?? "Tema"}
                 </h2>
-                {typeof s.ai_score === "number" && (
-                  <span className="font-pixel shrink-0 rounded-full border-2 border-primary px-2 py-1 text-[10px] text-primary">
-                    {s.ai_score}
+                {s.is_public && (
+                  <span className="shrink-0 rounded-full border-2 border-cian px-2 py-1 text-[10px] text-cian">
+                    pública
                   </span>
                 )}
               </div>
@@ -71,9 +71,6 @@ function Historial() {
                   {s.duration_minutes} min
                 </span>
               </div>
-              {s.ai_summary && (
-                <p className="text-sm italic text-muted-foreground">“{s.ai_summary}”</p>
-              )}
               {s.explanation_text && (
                 <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
                   {s.explanation_text}
