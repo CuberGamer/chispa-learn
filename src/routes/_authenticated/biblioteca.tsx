@@ -1,7 +1,8 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { Clock, Search, Tag } from "lucide-react";
+import { Search } from "lucide-react";
+import { PixelReloj } from "@/components/pixel-icons";
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
@@ -82,10 +83,10 @@ function Biblioteca() {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-6 px-5 pb-16">
-      <div className="flex items-center gap-4">
+      <div className="glass flex items-center gap-4 p-5">
         <Chispa skin={skin} estado="concentrado" size="sm" flotando={false} />
         <div>
-          <h1 className="text-2xl font-extrabold">Biblioteca</h1>
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">BIBLIOTECA</h1>
           <p className="text-sm text-muted-foreground">
             Elegí un tema y empezá a investigar.
           </p>
@@ -98,7 +99,7 @@ function Biblioteca() {
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
           placeholder="Buscar tema o palabra clave…"
-          className="bg-surface pl-9"
+          className="glass pl-9"
           aria-label="Buscar temas"
         />
       </div>
@@ -109,13 +110,13 @@ function Biblioteca() {
             type="button"
             onClick={() => setTagActiva(null)}
             className={cn(
-              "rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors",
+              "font-pixel rounded-full border-2 px-3 py-1.5 text-[9px] transition-colors",
               tagActiva === null
                 ? "border-primary bg-primary/15 text-primary"
-                : "border-border text-muted-foreground hover:text-foreground",
+                : "border-white/15 text-muted-foreground hover:text-foreground",
             )}
           >
-            Todos
+            TODOS
           </button>
           {tags.map((tag) => (
             <button
@@ -123,14 +124,13 @@ function Biblioteca() {
               type="button"
               onClick={() => setTagActiva((t) => (t === tag ? null : tag))}
               className={cn(
-                "inline-flex items-center gap-1 rounded-full border-2 px-3 py-1 text-xs font-medium transition-colors",
+                "font-pixel inline-flex items-center gap-1 rounded-full border-2 px-3 py-1.5 text-[9px] transition-colors",
                 tagActiva === tag
-                  ? "border-violeta bg-accent/20 text-accent-foreground"
-                  : "border-border text-muted-foreground hover:text-foreground",
+                  ? "border-violeta bg-accent/25 text-foreground"
+                  : "border-white/15 text-muted-foreground hover:text-foreground",
               )}
             >
-              <Tag className="size-3" />
-              {tag}
+              {tag.toUpperCase()}
             </button>
           ))}
         </div>
@@ -156,7 +156,7 @@ function Biblioteca() {
             return (
               <li
                 key={t.id}
-                className="panel flex flex-col gap-3 p-5 transition-colors hover:border-primary/50"
+                className="glass glass-hover flex flex-col gap-3 p-5"
               >
                 <div className="space-y-1">
                   <h2 className="font-semibold leading-snug">{t.title}</h2>
@@ -169,7 +169,7 @@ function Biblioteca() {
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
-                    <Clock className="size-3" />
+                    <PixelReloj size={12} />
                     {t.duration_suggested} min
                   </span>
                   {etiquetas?.map((n) => (
@@ -185,7 +185,7 @@ function Biblioteca() {
                 <Button
                   variant="contorno"
                   size="sm"
-                  className="mt-auto self-start"
+                  className="font-pixel mt-auto self-start text-[9px]"
                   onClick={() =>
                     navigate({
                       to: "/sesion",
@@ -193,14 +193,14 @@ function Biblioteca() {
                     })
                   }
                 >
-                  Investigar
+                  INVESTIGAR
                 </Button>
               </li>
             );
           })}
         </ul>
       ) : (
-        <div className="panel flex flex-col items-center gap-4 p-8 text-center">
+        <div className="glass flex flex-col items-center gap-4 p-8 text-center">
           <Chispa skin={skin} estado="sorprendido" size="md" />
           <BurbujaChispa>
             {busqueda || tagActiva

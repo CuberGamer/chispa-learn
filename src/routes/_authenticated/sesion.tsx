@@ -12,6 +12,7 @@ import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
+import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
   tema: z.string().uuid(),
@@ -265,11 +266,13 @@ function Explicacion({
 
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
-      <div className="flex items-center gap-4">
+      <div className="glass flex items-center gap-4 p-5">
         <Chispa skin={skin} estado="emocionado" size="sm" flotando={false} />
         <div>
-          <h1 className="text-xl font-bold">Contame qué aprendiste</h1>
-          <p className="text-sm text-muted-foreground">{titulo}</p>
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">
+            ¿QUÉ APRENDISTE?
+          </h1>
+          <p className="mt-1 text-sm text-muted-foreground">{titulo}</p>
         </div>
       </div>
 
@@ -281,34 +284,62 @@ function Explicacion({
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
         placeholder="Empezá por lo más importante: ¿de qué se trata el tema? ¿Qué te sorprendió?"
-        className="min-h-64 resize-y bg-surface text-base leading-relaxed"
+        className="glass min-h-64 resize-y p-4 text-base leading-relaxed"
       />
 
-      <label className="panel flex cursor-pointer items-start gap-3 p-4 text-sm">
-        <input
-          type="checkbox"
-          checked={publico}
-          onChange={(e) => setPublico(e.target.checked)}
-          className="mt-0.5 size-4 accent-[var(--primary)]"
-        />
-        <span>
-          <span className="font-semibold">Compartir en la comunidad</span>
-          <span className="block text-xs text-muted-foreground">
-            Tu explicación aparece en el feed público con tu nombre y tu Chispa.
+      <button
+        type="button"
+        role="switch"
+        aria-checked={publico}
+        onClick={() => setPublico((p) => !p)}
+        className="glass glass-hover flex w-full items-center gap-4 p-4 text-left"
+      >
+        <span
+          className={cn(
+            "relative h-7 w-12 shrink-0 rounded-full border transition-colors",
+            publico
+              ? "border-primary/60 bg-primary/30 glow-amarillo"
+              : "border-white/15 bg-white/5",
+          )}
+        >
+          <span
+            className={cn(
+              "absolute top-1/2 size-5 -translate-y-1/2 rounded-sm transition-all",
+              publico ? "left-6 bg-primary" : "left-1 bg-muted-foreground",
+            )}
+          />
+        </span>
+        <span className="min-w-0">
+          <span className="font-pixel block text-[10px] text-foreground">
+            COMPARTIR EN LA COMUNIDAD
+          </span>
+          <span className="mt-1 block text-xs text-muted-foreground">
+            Tu explicación aparece en el feed con tu nombre y tu Chispa. Podés cambiarlo
+            después desde el historial.
           </span>
         </span>
-      </label>
+      </button>
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant={dictando ? "destructive" : "contorno"} onClick={dictar}>
+        <Button
+          variant={dictando ? "destructive" : "contorno"}
+          onClick={dictar}
+          className="font-pixel text-[10px]"
+        >
           {dictando ? <MicOff /> : <Mic />}
-          {dictando ? "Detener dictado" : "Dictar"}
+          {dictando ? "DETENER" : "DICTAR"}
         </Button>
         <span className="text-xs text-muted-foreground">{texto.trim().length} caracteres</span>
       </div>
 
-      <Button variant="chispa" size="xl" className="w-full" onClick={guardar} disabled={guardando}>
-        {guardando ? "Guardando..." : "Guardar explicación"}
+      <Button
+        variant="chispa"
+        size="xl"
+        className="font-pixel w-full text-xs"
+        onClick={guardar}
+        disabled={guardando}
+      >
+        {guardando ? "GUARDANDO..." : "GUARDAR EXPLICACIÓN"}
       </Button>
     </main>
   );

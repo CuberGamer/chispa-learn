@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { Flame, BookOpen } from "lucide-react";
+import { PixelChispita, PixelGlobo, PixelReloj } from "@/components/pixel-icons";
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
@@ -56,8 +56,8 @@ function Inicio() {
   const streak = racha.data?.current_streak ?? 0;
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
-      <section className="flex flex-col items-center gap-4 text-center">
+    <main className="mx-auto w-full max-w-3xl space-y-6 px-5 pb-16">
+      <section className="glass flex flex-col items-center gap-4 p-6 text-center">
         <Chispa skin={skin} estado={streak > 0 ? "emocionado" : "neutral"} size="lg" />
         <BurbujaChispa>
           {streak > 1
@@ -67,26 +67,24 @@ function Inicio() {
       </section>
 
       <section className="grid grid-cols-2 gap-4">
-        <div className="panel flex items-center gap-3 p-4">
-          <Flame className="text-primary" />
+        <div className="glass glass-hover flex items-center gap-3 p-4">
+          <PixelChispita size={20} className="text-primary" />
           <div>
-            <p className="font-pixel text-lg text-primary">{streak}</p>
-            <p className="text-xs text-muted-foreground">días de racha</p>
+            <p className="font-pixel text-base text-primary text-glow-amarillo">{streak}</p>
+            <p className="mt-1 text-xs text-muted-foreground">días de racha</p>
           </div>
         </div>
-        <div className="panel flex items-center gap-3 p-4">
-          <BookOpen className="text-cian" />
+        <div className="glass glass-hover flex items-center gap-3 p-4">
+          <PixelGlobo size={20} className="text-cian" />
           <div>
-            <p className="font-pixel text-lg text-cian">{total.data ?? 0}</p>
-            <p className="text-xs text-muted-foreground">temas estudiados</p>
+            <p className="font-pixel text-base text-cian text-glow-cian">{total.data ?? 0}</p>
+            <p className="mt-1 text-xs text-muted-foreground">temas estudiados</p>
           </div>
         </div>
       </section>
 
-      <section className="panel space-y-5 p-6">
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Tema del día
-        </p>
+      <section className="glass space-y-5 p-6">
+        <p className="font-pixel text-[10px] text-primary text-glow-amarillo">TEMA DEL DÍA</p>
         {tema.isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-8 w-2/3" />
@@ -104,16 +102,17 @@ function Inicio() {
         )}
 
         <div className="space-y-3">
-          <p className="text-sm font-medium">¿Cuánto tiempo vas a investigar?</p>
+          <p className="font-pixel text-[10px] text-muted-foreground">¿CUÁNTO TIEMPO?</p>
           <div className="flex gap-2">
             {DURACIONES.map((m) => (
               <Button
                 key={m}
                 variant={minutos === m ? "chispa" : "contorno"}
                 onClick={() => setMinutos(m)}
-                className="flex-1"
+                className="font-pixel flex-1 text-[10px]"
               >
-                {m} min
+                <PixelReloj />
+                {m} MIN
               </Button>
             ))}
           </div>
@@ -122,7 +121,7 @@ function Inicio() {
         <Button
           variant="chispa"
           size="xl"
-          className="w-full"
+          className="font-pixel w-full text-xs"
           disabled={!tema.data}
           onClick={() =>
             tema.data &&
@@ -132,8 +131,9 @@ function Inicio() {
             })
           }
         >
-          Empezar
+          EMPEZAR
         </Button>
+
         <p className="text-center text-xs text-muted-foreground">
           Investigá donde quieras: internet, libros, videos. Después me lo explicás.
         </p>
