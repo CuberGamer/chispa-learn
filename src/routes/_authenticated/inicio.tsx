@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { PixelChispita, PixelGlobo } from "@/components/pixel-icons";
+import { PixelChispita, PixelGlobo, PixelReloj } from "@/components/pixel-icons";
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
@@ -102,16 +102,17 @@ function Inicio() {
         )}
 
         <div className="space-y-3">
-          <p className="text-sm font-medium">¿Cuánto tiempo vas a investigar?</p>
+          <p className="font-pixel text-[10px] text-muted-foreground">¿CUÁNTO TIEMPO?</p>
           <div className="flex gap-2">
             {DURACIONES.map((m) => (
               <Button
                 key={m}
                 variant={minutos === m ? "chispa" : "contorno"}
                 onClick={() => setMinutos(m)}
-                className="flex-1"
+                className="font-pixel flex-1 text-[10px]"
               >
-                {m} min
+                <PixelReloj />
+                {m} MIN
               </Button>
             ))}
           </div>
@@ -120,7 +121,7 @@ function Inicio() {
         <Button
           variant="chispa"
           size="xl"
-          className="w-full"
+          className="font-pixel w-full text-xs"
           disabled={!tema.data}
           onClick={() =>
             tema.data &&
@@ -130,8 +131,9 @@ function Inicio() {
             })
           }
         >
-          Empezar
+          EMPEZAR
         </Button>
+
         <p className="text-center text-xs text-muted-foreground">
           Investigá donde quieras: internet, libros, videos. Después me lo explicás.
         </p>
