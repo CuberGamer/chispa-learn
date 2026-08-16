@@ -77,10 +77,10 @@ function Perfil() {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
-      <div className="flex items-center gap-4">
+      <div className="glass flex items-center gap-4 p-5">
         <Chispa estado="emocionado" size="sm" skin={skin} flotando={false} />
         <div>
-          <h1 className="text-2xl font-extrabold">Tu perfil</h1>
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">PERFIL</h1>
           <p className="text-sm text-muted-foreground">
             Ponete cómodo: elegí tu nombre y el look de Chispa.
           </p>
@@ -94,10 +94,10 @@ function Perfil() {
         </div>
       ) : (
         <>
-          <section className="panel space-y-4 p-5">
+          <section className="glass space-y-4 p-5">
             <div className="space-y-2">
-              <label htmlFor="username" className="text-sm font-semibold">
-                Cómo te llamo
+              <label htmlFor="username" className="font-pixel text-[10px] text-muted-foreground">
+                CÓMO TE LLAMO
               </label>
               <Input
                 id="username"
@@ -113,7 +113,7 @@ function Perfil() {
           </section>
 
           <section className="space-y-4">
-            <h2 className="text-lg font-bold">Look de Chispa</h2>
+            <h2 className="font-pixel text-xs text-primary text-glow-amarillo">LOOK DE CHISPA</h2>
             <ul className="grid gap-3 sm:grid-cols-3">
               {SKINS.map((s) => (
                 <li key={s.id}>
@@ -122,20 +122,20 @@ function Perfil() {
                     onClick={() => setSkin(s.id)}
                     aria-pressed={skin === s.id}
                     className={cn(
-                      "panel flex w-full flex-col items-center gap-3 p-5 transition-colors",
-                      skin === s.id ? "border-primary" : "opacity-70 hover:opacity-100",
+                      "glass glass-hover flex w-full flex-col items-center gap-3 p-5",
+                      skin === s.id ? "border-primary/60" : "opacity-70 hover:opacity-100",
                     )}
                   >
                     <Chispa estado="neutral" size="sm" skin={s.id} flotando={false} />
-                    <span className="text-sm font-semibold">{s.nombre}</span>
+                    <span className="font-pixel text-[9px]">{s.nombre.toUpperCase()}</span>
                   </button>
                 </li>
               ))}
             </ul>
           </section>
 
-          <Button variant="chispa" onClick={guardar} disabled={guardando}>
-            {guardando ? "Guardando…" : "Guardar cambios"}
+          <Button variant="chispa" onClick={guardar} disabled={guardando} className="font-pixel text-[10px]">
+            {guardando ? "GUARDANDO…" : "GUARDAR CAMBIOS"}
           </Button>
         </>
       )}

@@ -4,7 +4,6 @@ import {
   Clock,
   Flame,
   Library,
-  Lock,
   Pen,
   Sparkles,
   Trophy,
@@ -12,6 +11,7 @@ import {
 } from "lucide-react";
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
+import { PixelCandado } from "@/components/pixel-icons";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
@@ -81,10 +81,10 @@ function Progreso() {
 
   return (
     <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
-      <div className="flex items-center gap-4">
+      <div className="glass flex items-center gap-4 p-5">
         <Chispa skin={skin} estado={logrados > 0 ? "emocionado" : "neutral"} size="sm" flotando={false} />
         <div>
-          <h1 className="text-2xl font-extrabold">Tu progreso</h1>
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">PROGRESO</h1>
           <p className="text-sm text-muted-foreground">
             Todo lo que fuiste construyendo, sesión por sesión.
           </p>
@@ -117,13 +117,13 @@ function Progreso() {
 
           <section className="space-y-4">
             <div className="flex items-end justify-between gap-3">
-              <h2 className="text-lg font-bold">Logros</h2>
+              <h2 className="font-pixel text-xs text-primary text-glow-amarillo">LOGROS</h2>
               <p className="text-xs text-muted-foreground">
                 {logrados} de {totalLogros} desbloqueados
               </p>
             </div>
 
-            <div className="h-2 overflow-hidden rounded-full bg-surface-2">
+            <div className="h-3 overflow-hidden rounded-full border border-white/15 bg-white/5">
               <div
                 className="h-full rounded-full bg-primary transition-all"
                 style={{
@@ -140,8 +140,8 @@ function Progreso() {
                   <li
                     key={l.id}
                     className={cn(
-                      "panel flex items-start gap-3 p-4",
-                      activo ? "border-primary/60" : "opacity-60",
+                      "glass glass-hover flex items-start gap-3 p-4",
+                      activo ? "border-primary/50" : "opacity-60",
                     )}
                   >
                     <span
@@ -149,10 +149,10 @@ function Progreso() {
                         "grid size-10 shrink-0 place-items-center rounded-full border-2",
                         activo
                           ? "border-primary bg-primary/15 text-primary"
-                          : "border-border text-muted-foreground",
+                          : "border-white/15 text-muted-foreground",
                       )}
                     >
-                      {activo ? <Icono className="size-5" /> : <Lock className="size-4" />}
+                      {activo ? <Icono className="size-5" /> : <PixelCandado size={14} />}
                     </span>
                     <div className="space-y-1">
                       <p className="font-semibold leading-snug">{l.name}</p>
@@ -171,7 +171,7 @@ function Progreso() {
           </section>
 
           {s?.sesiones === 0 && (
-            <div className="panel flex flex-col items-center gap-4 p-8 text-center">
+            <div className="glass flex flex-col items-center gap-4 p-8 text-center">
               <Chispa skin={skin} estado="sorprendido" size="md" />
               <BurbujaChispa>
                 Todavía no hay nada para mostrar. Hacé tu primera sesión y arrancamos.
@@ -198,7 +198,7 @@ function Metrica({
   const color =
     tono === "primary" ? "text-primary" : tono === "violeta" ? "text-violeta" : "text-cian";
   return (
-    <div className="panel flex items-center gap-3 p-4">
+    <div className="glass glass-hover flex items-center gap-3 p-4">
       <Icono className={cn("size-5 shrink-0", color)} />
       <div>
         <p className={cn("font-pixel text-base", color)}>{valor}</p>
