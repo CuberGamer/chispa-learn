@@ -186,14 +186,9 @@ function Biblioteca() {
                   variant="contorno"
                   size="sm"
                   className="font-pixel mt-auto self-start text-[9px]"
-                  onClick={() =>
-                    navigate({
-                      to: "/sesion",
-                      search: { tema: t.id, minutos: t.duration_suggested },
-                    })
-                  }
+                  onClick={() => navigate({ to: "/tema/$id", params: { id: t.id } })}
                 >
-                  INVESTIGAR
+                  VER TEMA
                 </Button>
               </li>
             );

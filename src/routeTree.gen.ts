@@ -19,6 +19,8 @@ import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
 import { Route as AuthenticatedProgresoRouteImport } from './routes/_authenticated/progreso'
 import { Route as AuthenticatedSesionRouteImport } from './routes/_authenticated/sesion'
+import { Route as EIdRouteImport } from './routes/e.$id'
+import { Route as AuthenticatedTemaIdRouteImport } from './routes/_authenticated/tema.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -69,6 +71,16 @@ const AuthenticatedSesionRoute = AuthenticatedSesionRouteImport.update({
   path: '/sesion',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const EIdRoute = EIdRouteImport.update({
+  id: '/e/$id',
+  path: '/e/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedTemaIdRoute = AuthenticatedTemaIdRouteImport.update({
+  id: '/tema/$id',
+  path: '/tema/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -80,6 +92,8 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/progreso': typeof AuthenticatedProgresoRoute
   '/sesion': typeof AuthenticatedSesionRoute
+  '/e/$id': typeof EIdRoute
+  '/tema/$id': typeof AuthenticatedTemaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -91,6 +105,8 @@ export interface FileRoutesByTo {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/progreso': typeof AuthenticatedProgresoRoute
   '/sesion': typeof AuthenticatedSesionRoute
+  '/e/$id': typeof EIdRoute
+  '/tema/$id': typeof AuthenticatedTemaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -104,6 +120,8 @@ export interface FileRoutesById {
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
   '/_authenticated/progreso': typeof AuthenticatedProgresoRoute
   '/_authenticated/sesion': typeof AuthenticatedSesionRoute
+  '/e/$id': typeof EIdRoute
+  '/_authenticated/tema/$id': typeof AuthenticatedTemaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -117,6 +135,8 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/progreso'
     | '/sesion'
+    | '/e/$id'
+    | '/tema/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -128,6 +148,8 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/progreso'
     | '/sesion'
+    | '/e/$id'
+    | '/tema/$id'
   id:
     | '__root__'
     | '/'
@@ -140,12 +162,15 @@ export interface FileRouteTypes {
     | '/_authenticated/perfil'
     | '/_authenticated/progreso'
     | '/_authenticated/sesion'
+    | '/e/$id'
+    | '/_authenticated/tema/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  EIdRoute: typeof EIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -220,6 +245,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSesionRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/e/$id': {
+      id: '/e/$id'
+      path: '/e/$id'
+      fullPath: '/e/$id'
+      preLoaderRoute: typeof EIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tema/$id': {
+      id: '/_authenticated/tema/$id'
+      path: '/tema/$id'
+      fullPath: '/tema/$id'
+      preLoaderRoute: typeof AuthenticatedTemaIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -231,6 +270,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
   AuthenticatedProgresoRoute: typeof AuthenticatedProgresoRoute
   AuthenticatedSesionRoute: typeof AuthenticatedSesionRoute
+  AuthenticatedTemaIdRoute: typeof AuthenticatedTemaIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -241,6 +281,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
   AuthenticatedProgresoRoute: AuthenticatedProgresoRoute,
   AuthenticatedSesionRoute: AuthenticatedSesionRoute,
+  AuthenticatedTemaIdRoute: AuthenticatedTemaIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
@@ -250,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  EIdRoute: EIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
