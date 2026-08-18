@@ -38,18 +38,21 @@ export type Database = {
       profiles: {
         Row: {
           avatar_chispa_skin: string
+          avatar_url: string | null
           created_at: string
           id: string
           username: string
         }
         Insert: {
           avatar_chispa_skin?: string
+          avatar_url?: string | null
           created_at?: string
           id: string
           username: string
         }
         Update: {
           avatar_chispa_skin?: string
+          avatar_url?: string | null
           created_at?: string
           id?: string
           username?: string
