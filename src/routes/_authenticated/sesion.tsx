@@ -5,6 +5,7 @@ import { Mic, MicOff, Pause, Play, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
