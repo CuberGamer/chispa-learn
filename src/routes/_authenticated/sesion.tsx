@@ -164,6 +164,8 @@ function Explicacion({
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [publico, setPublico] = useState(false);
+  const [guardada, setGuardada] = useState<string | null>(null);
+  const [publicando, setPublicando] = useState(false);
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
