@@ -1,9 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useState } from "react";
 import { toast } from "sonner";
 
+import { AvatarUsuario } from "@/components/avatar-usuario";
+import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, BurbujaChispa, type ChispaSkin } from "@/components/chispa";
-import { PixelAplauso, PixelCalendario, PixelReloj } from "@/components/pixel-icons";
+import { PixelAplauso, PixelChispita, PixelReloj } from "@/components/pixel-icons";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
@@ -26,9 +29,20 @@ export const Route = createFileRoute("/_authenticated/comunidad")({
   component: Comunidad,
 });
 
+/** "hace 5 min", "hace 3 h", "hace 2 d" — el tiempo relativo de las redes. */
+function haceCuanto(iso: string) {
+  const seg = Math.max(1, Math.floor((Date.now() - new Date(iso).getTime()) / 1000));
+  if (seg < 60) return "ahora";
+  if (seg < 3600) return `hace ${Math.floor(seg / 60)} min`;
+  if (seg < 86400) return `hace ${Math.floor(seg / 3600)} h`;
+  if (seg < 604800) return `hace ${Math.floor(seg / 86400)} d`;
+  return new Date(iso).toLocaleDateString("es-AR", { day: "numeric", month: "short" });
+}
+
 function Comunidad() {
   const miSkin = useSkin();
   const queryClient = useQueryClient();
+  const [expandidas, setExpandidas] = useState<Record<string, boolean>>({});
 
   const feed = useQuery({
     queryKey: ["comunidad"],
@@ -49,8 +63,18 @@ function Comunidad() {
 
       const [{ data: perfiles }, { data: claps }] = await Promise.all([
         autores.length
-          ? supabase.from("profiles").select("id, username, avatar_chispa_skin").in("id", autores)
-          : Promise.resolve({ data: [] as { id: string; username: string; avatar_chispa_skin: string }[] }),
+          ? supabase
+              .from("profiles")
+              .select("id, username, avatar_url, avatar_chispa_skin")
+              .in("id", autores)
+          : Promise.resolve({
+              data: [] as {
+                id: string;
+                username: string;
+                avatar_url: string | null;
+                avatar_chispa_skin: string;
+              }[],
+            }),
         supabase.from("session_claps").select("session_id, user_id"),
       ]);
 
@@ -66,6 +90,7 @@ function Comunidad() {
         ...s,
         titulo: (s.topics as { title: string } | null)?.title ?? "Tema",
         autor: perfilPor.get(s.user_id)?.username ?? "Alguien",
+        foto: perfilPor.get(s.user_id)?.avatar_url ?? null,
         skin: (perfilPor.get(s.user_id)?.avatar_chispa_skin as ChispaSkin) ?? "clasico",
         aplausos: conteo.get(s.id) ?? 0,
         aplaudida: mios.has(s.id),
@@ -99,69 +124,107 @@ function Comunidad() {
   });
 
   return (
-    <main className="mx-auto w-full max-w-3xl space-y-6 px-5 pb-16">
+    <main className="mx-auto w-full max-w-2xl space-y-5 px-5 pb-16">
       <div className="glass flex items-center gap-4 p-5">
         <Chispa skin={miSkin} estado="emocionado" size="sm" flotando={false} />
         <div>
           <h1 className="font-pixel text-sm text-primary text-glow-amarillo">COMUNIDAD</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            Explicaciones que otras personas eligieron compartir.
+            El feed de las explicaciones que se comparten.
           </p>
         </div>
       </div>
 
+      <Link
+        to="/biblioteca"
+        className="glass glass-hover flex items-center gap-3 p-4 transition-transform active:scale-[0.99]"
+      >
+        <AvatarUsuario skin={miSkin} size={40} />
+        <span className="flex-1 text-sm text-muted-foreground">
+          ¿Qué estás aprendiendo hoy? Elegí un tema…
+        </span>
+        <span className="font-pixel inline-flex items-center gap-1 rounded-full bg-primary/15 px-3 py-1.5 text-[9px] text-primary">
+          <PixelChispita size={12} />
+          PUBLICAR
+        </span>
+      </Link>
+
       {feed.isLoading ? (
         <div className="space-y-3">
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-32 w-full" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-40 w-full" />
         </div>
       ) : feed.data && feed.data.length > 0 ? (
         <ul className="space-y-4">
-          {feed.data.map((s) => (
-            <li key={s.id} className="glass glass-hover space-y-3 p-5">
-              <div className="flex items-start gap-3">
-                <Chispa skin={s.skin} estado="neutral" size="sm" flotando={false} />
-                <div className="min-w-0 flex-1">
-                  <p className="font-pixel truncate text-[10px] text-foreground">
-                    {s.autor}
-                    {s.propia && <span className="text-muted-foreground"> (VOS)</span>}
-                  </p>
-                  <p className="truncate text-sm text-primary">{s.titulo}</p>
+          {feed.data.map((s) => {
+            const largo = (s.explanation_text?.length ?? 0) > 380;
+            const abierta = expandidas[s.id] ?? false;
+            return (
+              <li key={s.id} className="glass glass-hover overflow-hidden">
+                <div className="flex items-center gap-3 p-4">
+                  <AvatarUsuario path={s.foto} skin={s.skin} nombre={s.autor} size={44} />
+                  <div className="min-w-0 flex-1">
+                    <p className="font-pixel truncate text-[10px] text-foreground">
+                      {s.autor}
+                      {s.propia && <span className="text-muted-foreground"> (VOS)</span>}
+                    </p>
+                    <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                      <span>{haceCuanto(s.created_at)}</span>
+                      <span aria-hidden>·</span>
+                      <span className="inline-flex items-center gap-1">
+                        <PixelReloj size={11} />
+                        {s.duration_minutes} min
+                      </span>
+                    </p>
+                  </div>
                 </div>
-              </div>
 
-              <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-                <span className="inline-flex items-center gap-1.5">
-                  <PixelCalendario />
-                  {new Date(s.created_at).toLocaleDateString("es-AR", {
-                    day: "numeric",
-                    month: "long",
-                  })}
-                </span>
-                <span className="inline-flex items-center gap-1.5">
-                  <PixelReloj />
-                  {s.duration_minutes} min
-                </span>
-              </div>
+                <div className="px-4">
+                  <span className="font-pixel inline-block rounded-full border-2 border-violeta/50 bg-accent/20 px-3 py-1 text-[9px] text-foreground">
+                    {s.titulo.toUpperCase()}
+                  </span>
+                </div>
 
-              {s.explanation_text && (
-                <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                  {s.explanation_text}
-                </p>
-              )}
+                {s.explanation_text && (
+                  <div className="px-4 pt-3">
+                    <p
+                      className={cn(
+                        "whitespace-pre-wrap text-sm leading-relaxed text-foreground/90",
+                        largo && !abierta && "line-clamp-6",
+                      )}
+                    >
+                      {s.explanation_text}
+                    </p>
+                    {largo && (
+                      <button
+                        type="button"
+                        className="font-pixel mt-2 text-[9px] text-primary"
+                        onClick={() =>
+                          setExpandidas((e) => ({ ...e, [s.id]: !abierta }))
+                        }
+                      >
+                        {abierta ? "VER MENOS" : "VER MÁS"}
+                      </button>
+                    )}
+                  </div>
+                )}
 
-              <Button
-                variant={s.aplaudida ? "chispa" : "contorno"}
-                size="sm"
-                className="font-pixel text-[10px]"
-                disabled={aplaudir.isPending}
-                onClick={() => aplaudir.mutate({ id: s.id, aplaudida: s.aplaudida })}
-              >
-                <PixelAplauso className={cn(s.aplaudida && "text-background")} />
-                {s.aplausos}
-              </Button>
-            </li>
-          ))}
+                <div className="mt-4 flex items-center gap-2 border-t border-white/10 p-3">
+                  <Button
+                    variant={s.aplaudida ? "chispa" : "ghost"}
+                    size="sm"
+                    className="font-pixel text-[10px]"
+                    disabled={aplaudir.isPending}
+                    onClick={() => aplaudir.mutate({ id: s.id, aplaudida: s.aplaudida })}
+                  >
+                    <PixelAplauso className={cn(s.aplaudida && "text-background")} />
+                    {s.aplausos}
+                  </Button>
+                  <BotonCompartir id={s.id} titulo={s.titulo} variante="ghost" />
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ) : (
         <div className="glass flex flex-col items-center gap-4 p-8 text-center">

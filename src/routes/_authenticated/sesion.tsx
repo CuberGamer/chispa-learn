@@ -5,6 +5,7 @@ import { Mic, MicOff, Pause, Play, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -164,6 +165,8 @@ function Explicacion({
   const [dictando, setDictando] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [publico, setPublico] = useState(false);
+  const [guardada, setGuardada] = useState<string | null>(null);
+  const [publicando, setPublicando] = useState(false);
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
@@ -256,13 +259,73 @@ function Explicacion({
       }
 
 
-      onListo();
+      setGuardada(sesion.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
     } finally {
       setGuardando(false);
     }
   }
+
+  async function publicarAhora() {
+    if (!guardada) return;
+    setPublicando(true);
+    const { error } = await supabase
+      .from("study_sessions")
+      .update({ is_public: true })
+      .eq("id", guardada);
+    setPublicando(false);
+    if (error) {
+      toast.error("No pude publicarla");
+      return;
+    }
+    setPublico(true);
+    toast.success("¡Ya está en la comunidad! 🎉");
+  }
+
+  if (guardada) {
+    return (
+      <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
+        <div className="glass flex flex-col items-center gap-4 p-8 text-center">
+          <Chispa skin={skin} estado="emocionado" size="md" />
+          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">
+            ¡EXPLICACIÓN GUARDADA!
+          </h1>
+          <BurbujaChispa>
+            {publico
+              ? "Ya está en la comunidad. ¡Compartila con quien quieras!"
+              : "Quedó guardada como privada. Si querés, publicala y compartila."}
+          </BurbujaChispa>
+
+          <div className="flex flex-wrap justify-center gap-2">
+            {publico ? (
+              <BotonCompartir id={guardada} titulo={titulo} variante="chispa" />
+            ) : (
+              <Button
+                variant="chispa"
+                size="sm"
+                className="font-pixel text-[10px]"
+                disabled={publicando}
+                onClick={publicarAhora}
+              >
+                {publicando ? "PUBLICANDO…" : "PUBLICAR Y COMPARTIR"}
+              </Button>
+            )}
+            <Button
+              variant="contorno"
+              size="sm"
+              className="font-pixel text-[10px]"
+              onClick={onListo}
+            >
+              LISTO
+            </Button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+
 
   return (
     <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
