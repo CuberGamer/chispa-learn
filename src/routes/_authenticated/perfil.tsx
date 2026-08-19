@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
+import { AvatarUsuario } from "@/components/avatar-usuario";
 import { Chispa, SKINS, type ChispaSkin } from "@/components/chispa";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,10 +17,13 @@ export const Route = createFileRoute("/_authenticated/perfil")({
       { title: "Tu perfil — Chispa" },
       {
         name: "description",
-        content: "Cambiá tu nombre y elegí el look de Chispa que más te guste.",
+        content: "Cambiá tu foto, tu nombre y elegí el look de Chispa que más te guste.",
       },
       { property: "og:title", content: "Tu perfil — Chispa" },
-      { property: "og:description", content: "Personalizá tu nombre y el skin de la mascota." },
+      {
+        property: "og:description",
+        content: "Personalizá tu foto de perfil, tu nombre y el skin de la mascota.",
+      },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -31,6 +35,8 @@ function Perfil() {
   const [username, setUsername] = useState("");
   const [skin, setSkin] = useState<ChispaSkin>("clasico");
   const [guardando, setGuardando] = useState(false);
+  const [subiendo, setSubiendo] = useState(false);
+  const inputFoto = useRef<HTMLInputElement | null>(null);
 
   const perfil = useQuery({
     queryKey: ["perfil"],
@@ -40,11 +46,11 @@ function Perfil() {
       if (!userId) throw new Error("Sesión expirada");
       const { data, error } = await supabase
         .from("profiles")
-        .select("id, username, avatar_chispa_skin")
+        .select("id, username, avatar_chispa_skin, avatar_url")
         .eq("id", userId)
         .maybeSingle();
       if (error) throw error;
-      return { ...data, email: userData.user?.email ?? "" };
+      return { ...data, id: data?.id ?? userId, email: userData.user?.email ?? "" };
     },
   });
 
@@ -54,6 +60,62 @@ function Perfil() {
       setSkin((perfil.data.avatar_chispa_skin as ChispaSkin) ?? "clasico");
     }
   }, [perfil.data]);
+
+  async function subirFoto(archivo: File) {
+    const userId = perfil.data?.id;
+    if (!userId) return;
+    if (!archivo.type.startsWith("image/")) {
+      toast.error("Elegí una imagen (jpg, png o webp)");
+      return;
+    }
+    if (archivo.size > 5 * 1024 * 1024) {
+      toast.error("La imagen no puede pesar más de 5 MB");
+      return;
+    }
+
+    setSubiendo(true);
+    try {
+      const ext = archivo.name.split(".").pop()?.toLowerCase() || "jpg";
+      const path = `${userId}/avatar-${Date.now()}.${ext}`;
+      const { error: subida } = await supabase.storage
+        .from("avatars")
+        .upload(path, archivo, { upsert: true, contentType: archivo.type });
+      if (subida) throw subida;
+
+      const anterior = perfil.data?.avatar_url;
+      const { error } = await supabase
+        .from("profiles")
+        .update({ avatar_url: path })
+        .eq("id", userId);
+      if (error) throw error;
+
+      if (anterior) await supabase.storage.from("avatars").remove([anterior]);
+
+      toast.success("¡Nueva foto de perfil! 📸");
+      await queryClient.invalidateQueries();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "No pude subir la foto");
+    } finally {
+      setSubiendo(false);
+      if (inputFoto.current) inputFoto.current.value = "";
+    }
+  }
+
+  async function quitarFoto() {
+    const userId = perfil.data?.id;
+    const anterior = perfil.data?.avatar_url;
+    if (!userId || !anterior) return;
+    setSubiendo(true);
+    const { error } = await supabase.from("profiles").update({ avatar_url: null }).eq("id", userId);
+    if (!error) await supabase.storage.from("avatars").remove([anterior]);
+    setSubiendo(false);
+    if (error) {
+      toast.error("No pude quitar la foto");
+      return;
+    }
+    toast.success("Volvés a mostrar tu Chispa");
+    await queryClient.invalidateQueries();
+  }
 
   async function guardar() {
     const nombre = username.trim();
@@ -73,6 +135,7 @@ function Perfil() {
     }
     toast.success("¡Listo! Guardado");
     void queryClient.invalidateQueries({ queryKey: ["perfil"] });
+    void queryClient.invalidateQueries({ queryKey: ["skin"] });
   }
 
   return (
@@ -82,7 +145,7 @@ function Perfil() {
         <div>
           <h1 className="font-pixel text-sm text-primary text-glow-amarillo">PERFIL</h1>
           <p className="text-sm text-muted-foreground">
-            Ponete cómodo: elegí tu nombre y el look de Chispa.
+            Ponete cómodo: foto, nombre y el look de Chispa.
           </p>
         </div>
       </div>
@@ -94,6 +157,54 @@ function Perfil() {
         </div>
       ) : (
         <>
+          <section className="glass flex flex-wrap items-center gap-5 p-5">
+            <AvatarUsuario
+              path={perfil.data?.avatar_url ?? null}
+              skin={skin}
+              nombre={username}
+              size={88}
+              className="border-primary/40"
+            />
+            <div className="space-y-2">
+              <p className="font-pixel text-[10px] text-muted-foreground">TU FOTO DE PERFIL</p>
+              <div className="flex flex-wrap gap-2">
+                <Button
+                  variant="chispa"
+                  size="sm"
+                  className="font-pixel text-[9px]"
+                  disabled={subiendo}
+                  onClick={() => inputFoto.current?.click()}
+                >
+                  {subiendo ? "SUBIENDO…" : "CAMBIAR FOTO"}
+                </Button>
+                {perfil.data?.avatar_url && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="font-pixel text-[9px] text-muted-foreground"
+                    disabled={subiendo}
+                    onClick={quitarFoto}
+                  >
+                    QUITAR
+                  </Button>
+                )}
+              </div>
+              <input
+                ref={inputFoto}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const f = e.target.files?.[0];
+                  if (f) void subirFoto(f);
+                }}
+              />
+              <p className="text-xs text-muted-foreground">
+                Si no subís foto, te muestro con tu Chispa.
+              </p>
+            </div>
+          </section>
+
           <section className="glass space-y-4 p-5">
             <div className="space-y-2">
               <label htmlFor="username" className="font-pixel text-[10px] text-muted-foreground">
@@ -134,7 +245,12 @@ function Perfil() {
             </ul>
           </section>
 
-          <Button variant="chispa" onClick={guardar} disabled={guardando} className="font-pixel text-[10px]">
+          <Button
+            variant="chispa"
+            onClick={guardar}
+            disabled={guardando}
+            className="font-pixel text-[10px]"
+          >
             {guardando ? "GUARDANDO…" : "GUARDAR CAMBIOS"}
           </Button>
         </>
