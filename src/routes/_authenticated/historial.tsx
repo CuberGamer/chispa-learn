@@ -113,16 +113,25 @@ function Historial() {
                 </p>
               )}
 
-              <Button
-                variant={s.is_public ? "contorno" : "chispa"}
-                size="sm"
-                className="font-pixel text-[10px]"
-                disabled={publicar.isPending}
-                onClick={() => publicar.mutate({ id: s.id, publico: !s.is_public })}
-              >
-                {s.is_public ? <PixelCandado /> : <PixelGlobo />}
-                {s.is_public ? "HACER PRIVADA" : "PUBLICAR"}
-              </Button>
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant={s.is_public ? "contorno" : "chispa"}
+                  size="sm"
+                  className="font-pixel text-[10px]"
+                  disabled={publicar.isPending}
+                  onClick={() => publicar.mutate({ id: s.id, publico: !s.is_public })}
+                >
+                  {s.is_public ? <PixelCandado /> : <PixelGlobo />}
+                  {s.is_public ? "HACER PRIVADA" : "PUBLICAR"}
+                </Button>
+                {s.is_public && (
+                  <BotonCompartir
+                    id={s.id}
+                    titulo={(s.topics as { title: string } | null)?.title ?? "Tema"}
+                    variante="ghost"
+                  />
+                )}
+              </div>
             </li>
           ))}
         </ul>
