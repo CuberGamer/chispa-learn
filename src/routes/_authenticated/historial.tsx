@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import {
   PixelCalendario,
