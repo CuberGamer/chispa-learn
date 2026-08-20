@@ -21,6 +21,7 @@ import { Route as AuthenticatedProgresoRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedSesionRouteImport } from './routes/_authenticated/sesion'
 import { Route as EIdRouteImport } from './routes/e.$id'
 import { Route as AuthenticatedTemaIdRouteImport } from './routes/_authenticated/tema.$id'
+import { Route as AuthenticatedUIdRouteImport } from './routes/_authenticated/u.$id'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -81,6 +82,11 @@ const AuthenticatedTemaIdRoute = AuthenticatedTemaIdRouteImport.update({
   path: '/tema/$id',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedUIdRoute = AuthenticatedUIdRouteImport.update({
+  id: '/u/$id',
+  path: '/u/$id',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -94,6 +100,7 @@ export interface FileRoutesByFullPath {
   '/sesion': typeof AuthenticatedSesionRoute
   '/e/$id': typeof EIdRoute
   '/tema/$id': typeof AuthenticatedTemaIdRoute
+  '/u/$id': typeof AuthenticatedUIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -107,6 +114,7 @@ export interface FileRoutesByTo {
   '/sesion': typeof AuthenticatedSesionRoute
   '/e/$id': typeof EIdRoute
   '/tema/$id': typeof AuthenticatedTemaIdRoute
+  '/u/$id': typeof AuthenticatedUIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -122,6 +130,7 @@ export interface FileRoutesById {
   '/_authenticated/sesion': typeof AuthenticatedSesionRoute
   '/e/$id': typeof EIdRoute
   '/_authenticated/tema/$id': typeof AuthenticatedTemaIdRoute
+  '/_authenticated/u/$id': typeof AuthenticatedUIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -137,6 +146,7 @@ export interface FileRouteTypes {
     | '/sesion'
     | '/e/$id'
     | '/tema/$id'
+    | '/u/$id'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/sesion'
     | '/e/$id'
     | '/tema/$id'
+    | '/u/$id'
   id:
     | '__root__'
     | '/'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/_authenticated/sesion'
     | '/e/$id'
     | '/_authenticated/tema/$id'
+    | '/_authenticated/u/$id'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -259,6 +271,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTemaIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/u/$id': {
+      id: '/_authenticated/u/$id'
+      path: '/u/$id'
+      fullPath: '/u/$id'
+      preLoaderRoute: typeof AuthenticatedUIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
   }
 }
 
@@ -271,6 +290,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedProgresoRoute: typeof AuthenticatedProgresoRoute
   AuthenticatedSesionRoute: typeof AuthenticatedSesionRoute
   AuthenticatedTemaIdRoute: typeof AuthenticatedTemaIdRoute
+  AuthenticatedUIdRoute: typeof AuthenticatedUIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -282,6 +302,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedProgresoRoute: AuthenticatedProgresoRoute,
   AuthenticatedSesionRoute: AuthenticatedSesionRoute,
   AuthenticatedTemaIdRoute: AuthenticatedTemaIdRoute,
+  AuthenticatedUIdRoute: AuthenticatedUIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
