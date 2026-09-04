@@ -244,8 +244,11 @@ function Inicio() {
   async function temaAleatorio() {
     const { data } = await supabase.from("topics").select("id").limit(200);
     const lista = data ?? [];
-    if (!lista.length) return toast.error("Todavía no hay temas cargados");
     const elegido = lista[Math.floor(Math.random() * lista.length)];
+    if (!elegido) {
+      toast.error("Todavía no hay temas cargados");
+      return;
+    }
     navigate({ to: "/tema/$id", params: { id: elegido.id } });
   }
 
