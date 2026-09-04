@@ -152,122 +152,145 @@ function PerfilPublico() {
   const skin = (d.cuenta.avatar_chispa_skin as ChispaSkin) ?? "clasico";
 
   return (
-    <main className="mx-auto w-full max-w-2xl space-y-5 px-5 pb-16">
-      <div className="glass space-y-4 p-5">
-        <div className="flex items-center gap-4">
+    <main className="mx-auto w-full max-w-[1500px] space-y-4 px-4 pb-16 lg:px-8">
+      {/* Cabecera del perfil: avatar grande · datos · racha */}
+      <div className="glass grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)_180px] lg:items-center">
+        <div className="flex justify-center">
           <AvatarUsuario
             path={d.cuenta.avatar_url}
             skin={skin}
             nombre={d.cuenta.username}
-            size={72}
+            size={180}
+            className="max-w-full"
           />
-          <div className="min-w-0 flex-1">
-            <h1 className="font-pixel truncate text-sm text-primary text-glow-amarillo">
-              {d.cuenta.username.toUpperCase()}
-            </h1>
-            <p className="mt-1 inline-flex items-center gap-1.5 text-xs text-muted-foreground">
-              <PixelCalendario size={12} />
-              Desde{" "}
-              {new Date(d.cuenta.created_at).toLocaleDateString("es-AR", {
-                month: "long",
-                year: "numeric",
-              })}
-            </p>
-          </div>
-          {d.esMio ? (
-            <Button asChild variant="contorno" size="sm" className="font-pixel text-[9px]">
-              <Link to="/perfil">EDITAR</Link>
-            </Button>
-          ) : (
-            <Button
-              variant={d.loSigo ? "ghost" : "chispa"}
-              size="sm"
-              className="font-pixel text-[9px]"
-              disabled={seguir.isPending}
-              onClick={() => seguir.mutate(d.loSigo)}
-            >
-              <PixelPersona size={12} />
-              {d.loSigo ? "SIGUIENDO" : "SEGUIR"}
-            </Button>
-          )}
         </div>
 
-        <ul className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-          {[
-            { label: "RACHA", valor: `${d.rachaActual} d`, icon: <PixelFuego size={14} /> },
-            { label: "MÁXIMA", valor: `${d.rachaMaxima} d`, icon: <PixelFuego size={14} /> },
-            { label: "MINUTOS", valor: `${d.minutos}`, icon: <PixelReloj size={14} /> },
-            { label: "PÚBLICAS", valor: `${d.sesiones.length}`, icon: <PixelChispita size={14} /> },
-          ].map((m) => (
-            <li key={m.label} className="rounded-2xl border-2 border-white/10 bg-white/5 p-3">
-              <p className="font-pixel inline-flex items-center gap-1.5 text-[8px] text-muted-foreground">
-                {m.icon}
-                {m.label}
-              </p>
-              <p className="font-pixel mt-1 text-xs text-foreground">{m.valor}</p>
-            </li>
-          ))}
-        </ul>
+        <div className="glass space-y-3 p-5">
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="font-pixel flex-1 truncate text-base text-primary text-glow-amarillo">
+              {d.cuenta.username.toUpperCase()}
+            </h1>
+            {d.esMio ? (
+              <Button asChild variant="contorno" size="sm" className="font-pixel text-[9px]">
+                <Link to="/perfil">EDITAR</Link>
+              </Button>
+            ) : (
+              <Button
+                variant={d.loSigo ? "ghost" : "chispa"}
+                size="sm"
+                className="font-pixel text-[9px]"
+                disabled={seguir.isPending}
+                onClick={() => seguir.mutate(d.loSigo)}
+              >
+                <PixelPersona size={12} />
+                {d.loSigo ? "SIGUIENDO" : "SEGUIR"}
+              </Button>
+            )}
+            <span className="font-pixel rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[9px] text-muted-foreground">
+              {d.seguidores} SEGUIDORES
+            </span>
+          </div>
+          <p className="border-b border-dashed border-white/15 pb-2 text-sm text-muted-foreground">
+            {d.sesiones.length} explicaciones públicas · {d.siguiendoCantidad} siguiendo
+          </p>
+          <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+            <PixelCalendario size={12} />
+            Desde{" "}
+            {new Date(d.cuenta.created_at).toLocaleDateString("es-AR", {
+              month: "long",
+              year: "numeric",
+            })}
+          </p>
+        </div>
 
-        <p className="font-pixel text-[9px] text-muted-foreground">
-          {d.seguidores} SEGUIDORES · {d.siguiendoCantidad} SIGUIENDO
-        </p>
+        <div className="flex flex-col items-center justify-center gap-1">
+          <PixelFuego size={64} className="text-primary" />
+          <p className="font-pixel text-lg text-primary text-glow-amarillo">{d.rachaActual}</p>
+          <p className="font-pixel text-[8px] text-muted-foreground">RACHA</p>
+        </div>
       </div>
 
-      <section className="glass space-y-3 p-5">
-        <h2 className="font-pixel text-xs text-primary">LOGROS</h2>
-        <ul className="grid gap-2 sm:grid-cols-2">
-          {d.logros.map((l) => (
-            <li
-              key={l.id}
-              className={
-                "rounded-2xl border-2 p-3 " +
-                (l.unlocked_at
-                  ? "border-primary/50 bg-primary/10"
-                  : "border-white/10 bg-white/5 opacity-60")
-              }
-            >
-              <p className="font-pixel text-[9px] text-foreground">{l.name.toUpperCase()}</p>
-              <p className="mt-1 text-xs text-muted-foreground">{l.description}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {/* Métricas rápidas */}
+      <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          { label: "RACHA MÁXIMA", valor: `${d.rachaMaxima} d`, icon: <PixelFuego size={14} /> },
+          { label: "MINUTOS", valor: `${d.minutos}`, icon: <PixelReloj size={14} /> },
+          { label: "PÚBLICAS", valor: `${d.sesiones.length}`, icon: <PixelChispita size={14} /> },
+          { label: "SIGUIENDO", valor: `${d.siguiendoCantidad}`, icon: <PixelPersona size={14} /> },
+        ].map((m) => (
+          <li key={m.label} className="glass glass-hover p-4">
+            <p className="font-pixel inline-flex items-center gap-1.5 text-[8px] text-muted-foreground">
+              {m.icon}
+              {m.label}
+            </p>
+            <p className="font-pixel mt-2 text-sm text-foreground">{m.valor}</p>
+          </li>
+        ))}
+      </ul>
 
-      <section className="space-y-3">
-        <h2 className="font-pixel px-1 text-xs text-primary">EXPLICACIONES PÚBLICAS</h2>
-        {d.sesiones.length > 0 ? (
-          <ul className="space-y-3">
-            {d.sesiones.map((s) => (
-              <li key={s.id} className="glass glass-hover space-y-2 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="font-pixel rounded-full border-2 border-violeta/50 bg-accent/20 px-3 py-1 text-[9px]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        {/* Temas publicados */}
+        <section className="glass space-y-4 p-5">
+          <h2 className="font-pixel text-xs text-primary">TEMAS</h2>
+          {d.sesiones.length > 0 ? (
+            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+              {d.sesiones.map((s) => (
+                <li key={s.id} className="glass glass-hover flex flex-col gap-2 p-4">
+                  <span className="font-pixel self-start rounded-full border border-violeta/50 bg-accent/20 px-2.5 py-1 text-[8px]">
                     {((s.topics as { title: string } | null)?.title ?? "Tema").toUpperCase()}
                   </span>
-                  <span className="inline-flex items-center gap-1 text-xs text-muted-foreground">
+                  {s.explanation_text && (
+                    <p className="line-clamp-5 text-xs whitespace-pre-wrap text-foreground/90">
+                      {s.explanation_text}
+                    </p>
+                  )}
+                  <span className="font-pixel inline-flex items-center gap-1.5 text-[8px] text-muted-foreground">
                     <PixelReloj size={11} />
-                    {s.duration_minutes} min
+                    {s.duration_minutes} MIN
                   </span>
-                </div>
-                {s.explanation_text && (
-                  <p className="line-clamp-5 whitespace-pre-wrap text-sm text-foreground/90">
-                    {s.explanation_text}
-                  </p>
-                )}
-                <BotonCompartir
-                  id={s.id}
-                  titulo={(s.topics as { title: string } | null)?.title ?? "Tema"}
-                  variante="ghost"
-                />
+                  <div className="mt-auto flex flex-wrap gap-2">
+                    <Button asChild variant="ghost" size="sm" className="font-pixel text-[9px]">
+                      <Link to="/e/$id" params={{ id: s.id }}>
+                        VER
+                      </Link>
+                    </Button>
+                    <BotonCompartir
+                      id={s.id}
+                      titulo={(s.topics as { title: string } | null)?.title ?? "Tema"}
+                      variante="ghost"
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="p-6 text-center text-sm text-muted-foreground">
+              Todavía no compartió explicaciones.
+            </p>
+          )}
+        </section>
+
+        {/* Logros */}
+        <aside className="glass h-fit space-y-3 p-5 lg:sticky lg:top-32">
+          <h2 className="font-pixel text-xs text-primary">LOGROS</h2>
+          <ul className="space-y-2">
+            {d.logros.map((l) => (
+              <li
+                key={l.id}
+                className={
+                  "rounded-2xl border p-3 " +
+                  (l.unlocked_at
+                    ? "border-primary/50 bg-primary/10"
+                    : "border-white/10 bg-white/5 opacity-60")
+                }
+              >
+                <p className="font-pixel text-[9px] text-foreground">{l.name.toUpperCase()}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{l.description}</p>
               </li>
             ))}
           </ul>
-        ) : (
-          <div className="glass p-6 text-center text-sm text-muted-foreground">
-            Todavía no compartió explicaciones.
-          </div>
-        )}
-      </section>
+        </aside>
+      </div>
     </main>
   );
 }
