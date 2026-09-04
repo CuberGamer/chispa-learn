@@ -1,7 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Pause, Play, SkipForward } from "lucide-react";
+import { Mic, MicOff, NotebookPen, Pause, Play, SkipForward } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
@@ -42,6 +42,23 @@ function Sesion() {
   const [restante, setRestante] = useState(minutos * 60);
   const [pausado, setPausado] = useState(false);
   const [fase, setFase] = useState<"timer" | "explicar">("timer");
+  const [notas, setNotas] = useState("");
+  const [panelNotas, setPanelNotas] = useState(false);
+
+  const claveNotas = `chispa-notas-${temaId}`;
+
+  useEffect(() => {
+    const guardadas = localStorage.getItem(claveNotas);
+    if (guardadas) {
+      setNotas(guardadas);
+      setPanelNotas(true);
+    }
+  }, [claveNotas]);
+
+  useEffect(() => {
+    if (notas.trim()) localStorage.setItem(claveNotas, notas);
+    else localStorage.removeItem(claveNotas);
+  }, [claveNotas, notas]);
 
   const tema = useQuery({
     queryKey: ["tema", temaId],
