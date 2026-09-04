@@ -8,7 +8,6 @@ import {
   PixelCartas,
   PixelChispita,
   PixelEquis,
-  PixelEstrella,
   PixelInstagram,
   PixelPlan,
   PixelTiktok,
