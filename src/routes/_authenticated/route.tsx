@@ -78,9 +78,9 @@ function LayoutApp() {
               </Link>
               <Link to="/perfil" aria-label="Ir a tu perfil">
                 <AvatarUsuario
-                  path={perfil.data?.avatarUrl}
-                  skin={perfil.data?.skin}
-                  nombre={perfil.data?.username}
+                  path={perfil.data?.avatarUrl ?? null}
+                  skin={perfil.data?.skin ?? "clasico"}
+                  nombre={perfil.data?.username ?? "Tu perfil"}
                   size={38}
                 />
               </Link>
