@@ -391,6 +391,28 @@ function Explicacion({
         Explicalo como si me lo enseñaras a mí. Si dictás, revisá el texto antes de guardar.
       </BurbujaChispa>
 
+      {notas.trim() && (
+        <div className="glass space-y-3 p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <h2 className="font-pixel text-[10px] text-secondary">NOTAS DE TU INVESTIGACIÓN</h2>
+            <Button
+              variant="contorno"
+              size="sm"
+              className="font-pixel text-[10px]"
+              onClick={() =>
+                setTexto((t) => (t.trim() ? `${t.trim()}\n\n${notas.trim()}` : notas.trim()))
+              }
+            >
+              <NotebookPen />
+              USAR MIS NOTAS
+            </Button>
+          </div>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+            {notas.trim()}
+          </p>
+        </div>
+      )}
+
       <Textarea
         value={texto}
         onChange={(e) => setTexto(e.target.value)}
