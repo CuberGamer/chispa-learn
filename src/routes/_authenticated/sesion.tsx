@@ -151,11 +151,33 @@ function Sesion() {
           {pausado ? <Play /> : <Pause />}
           {pausado ? "Seguir" : "Pausar"}
         </Button>
+        <Button variant="contorno" onClick={() => setPanelNotas((p) => !p)}>
+          <NotebookPen />
+          {panelNotas ? "Ocultar notas" : "Tomar notas"}
+        </Button>
         <Button variant="neon" onClick={() => { sonarAlerta(); setFase("explicar"); }}>
           <SkipForward />
           Ya terminé, quiero explicar
         </Button>
       </div>
+
+      {panelNotas && (
+        <div className="glass w-full space-y-3 p-4 text-left">
+          <div className="flex items-center justify-between gap-3">
+            <h2 className="font-pixel text-[10px] text-primary text-glow-amarillo">MIS NOTAS</h2>
+            <span className="text-xs text-muted-foreground">Se guardan solas</span>
+          </div>
+          <Textarea
+            value={notas}
+            onChange={(e) => setNotas(e.target.value)}
+            placeholder="Anotá ideas, datos y palabras clave mientras investigás…"
+            className="min-h-40 resize-y bg-transparent p-3 text-sm leading-relaxed"
+          />
+          <p className="text-xs text-muted-foreground">
+            Cuando termines vas a poder usar estas notas como base de tu explicación.
+          </p>
+        </div>
+      )}
     </main>
   );
 }
