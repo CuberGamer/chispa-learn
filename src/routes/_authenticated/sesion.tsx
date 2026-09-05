@@ -197,11 +197,15 @@ function Explicacion({
   temaId,
   titulo,
   minutos,
+  notas,
+  onLimpiarNotas,
   onListo,
 }: {
   temaId: string;
   titulo: string;
   minutos: number;
+  notas: string;
+  onLimpiarNotas: () => void;
   onListo: () => void;
 }) {
   const skin = useSkin();
