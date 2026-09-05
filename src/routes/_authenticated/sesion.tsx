@@ -307,6 +307,7 @@ function Explicacion({
       }
 
 
+      onLimpiarNotas();
       setGuardada(sesion.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
