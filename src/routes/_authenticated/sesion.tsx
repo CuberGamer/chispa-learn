@@ -97,6 +97,11 @@ function Sesion() {
         temaId={temaId}
         titulo={tema.data?.title ?? "Tema"}
         minutos={minutos}
+        notas={notas}
+        onLimpiarNotas={() => {
+          localStorage.removeItem(claveNotas);
+          setNotas("");
+        }}
         onListo={() => navigate({ to: "/inicio" })}
       />
     );
