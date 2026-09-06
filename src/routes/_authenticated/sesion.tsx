@@ -1,12 +1,19 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Mic, MicOff, NotebookPen, Pause, Play, SkipForward } from "lucide-react";
+import { Mic, MicOff, NotebookPen } from "lucide-react";
 import { toast } from "sonner";
 import { z } from "zod";
 
 import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
+import {
+  PixelCheck,
+  PixelLupa,
+  PixelMas,
+  PixelPausa,
+  PixelPlay,
+} from "@/components/pixel-icons";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSkin } from "@/hooks/use-skin";
@@ -34,6 +41,9 @@ export const Route = createFileRoute("/_authenticated/sesion")({
   component: Sesion,
 });
 
+type Fuente = { id: string; titulo: string; url: string };
+type Pestana = { id: string; nombre: string; texto: string };
+
 function Sesion() {
   const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
@@ -42,23 +52,57 @@ function Sesion() {
   const [restante, setRestante] = useState(minutos * 60);
   const [pausado, setPausado] = useState(false);
   const [fase, setFase] = useState<"timer" | "explicar">("timer");
-  const [notas, setNotas] = useState("");
-  const [panelNotas, setPanelNotas] = useState(false);
 
   const claveNotas = `chispa-notas-${temaId}`;
+  const claveFuentes = `chispa-fuentes-${temaId}`;
+
+  /* ——— Notas en pestañas ——— */
+  const [pestanas, setPestanas] = useState<Pestana[]>([
+    { id: "p1", nombre: "Pestaña 1", texto: "" },
+  ]);
+  const [activa, setActiva] = useState("p1");
 
   useEffect(() => {
     const guardadas = localStorage.getItem(claveNotas);
-    if (guardadas) {
-      setNotas(guardadas);
-      setPanelNotas(true);
+    if (!guardadas) return;
+    try {
+      const parsed = JSON.parse(guardadas) as Pestana[];
+      if (Array.isArray(parsed) && parsed.length && parsed[0]) {
+        setPestanas(parsed);
+        setActiva(parsed[0].id);
+      }
+    } catch {
+      setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: guardadas }]);
     }
   }, [claveNotas]);
 
   useEffect(() => {
-    if (notas.trim()) localStorage.setItem(claveNotas, notas);
-    else localStorage.removeItem(claveNotas);
-  }, [claveNotas, notas]);
+    localStorage.setItem(claveNotas, JSON.stringify(pestanas));
+  }, [claveNotas, pestanas]);
+
+  const notas = pestanas
+    .map((p) => (p.texto.trim() ? `${p.nombre}\n${p.texto.trim()}` : ""))
+    .filter(Boolean)
+    .join("\n\n");
+
+  /* ——— Fuentes ——— */
+  const [fuentes, setFuentes] = useState<Fuente[]>([]);
+  const [buscarFuente, setBuscarFuente] = useState("");
+
+  useEffect(() => {
+    const g = localStorage.getItem(claveFuentes);
+    if (!g) return;
+    try {
+      const parsed = JSON.parse(g) as Fuente[];
+      if (Array.isArray(parsed)) setFuentes(parsed);
+    } catch {
+      /* fuentes corruptas: se ignoran */
+    }
+  }, [claveFuentes]);
+
+  useEffect(() => {
+    localStorage.setItem(claveFuentes, JSON.stringify(fuentes));
+  }, [claveFuentes, fuentes]);
 
   const tema = useQuery({
     queryKey: ["tema", temaId],
@@ -90,6 +134,8 @@ function Sesion() {
   }, [fase, pausado]);
 
   const progreso = 1 - restante / (minutos * 60);
+  const R = 46;
+  const perimetro = 2 * Math.PI * R;
 
   if (fase === "explicar") {
     return (
@@ -100,84 +146,205 @@ function Sesion() {
         notas={notas}
         onLimpiarNotas={() => {
           localStorage.removeItem(claveNotas);
-          setNotas("");
+          setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: "" }]);
         }}
         onListo={() => navigate({ to: "/inicio" })}
       />
     );
   }
 
+  const buscadas = buscarFuente.trim()
+    ? fuentes.filter((f) =>
+        `${f.titulo} ${f.url}`.toLowerCase().includes(buscarFuente.trim().toLowerCase()),
+      )
+    : fuentes;
+
+  const notaActiva = pestanas.find((p) => p.id === activa) ?? pestanas[0]!;
+
   return (
-    <main className="mx-auto flex w-full max-w-2xl flex-col items-center gap-8 px-5 pb-16 text-center">
-      <div>
-        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          Estás investigando
-        </p>
-        <h1 className="mt-2 text-xl font-bold sm:text-2xl">{tema.data?.title ?? "..."}</h1>
-      </div>
-
-      <div className="relative flex size-72 items-center justify-center">
-        <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
-          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--border)" strokeWidth="4" />
-          <circle
-            cx="50"
-            cy="50"
-            r="45"
-            fill="none"
-            stroke="var(--primary)"
-            strokeWidth="4"
-            strokeLinecap="round"
-            strokeDasharray={2 * Math.PI * 45}
-            strokeDashoffset={2 * Math.PI * 45 * (1 - progreso)}
-            style={{ transition: "stroke-dashoffset 1s linear", filter: "drop-shadow(0 0 6px var(--primary))" }}
-          />
-        </svg>
-        <div className="flex flex-col items-center">
-          <Chispa skin={skin} estado="concentrado" size="md" />
-          <p className="font-pixel mt-3 text-3xl text-primary text-glow-amarillo">
-            {formatearTiempo(restante)}
-          </p>
-        </div>
-      </div>
-
-      <BurbujaChispa>
-        {restante <= 60
-          ? "¡Último minuto! Empezá a ordenar las ideas."
-          : "Estoy concentrado con vos. Investigá tranquilo."}
-      </BurbujaChispa>
-
-      <div className="flex flex-wrap justify-center gap-2">
-        <Button variant="contorno" onClick={() => setPausado((p) => !p)}>
-          {pausado ? <Play /> : <Pause />}
-          {pausado ? "Seguir" : "Pausar"}
-        </Button>
-        <Button variant="contorno" onClick={() => setPanelNotas((p) => !p)}>
-          <NotebookPen />
-          {panelNotas ? "Ocultar notas" : "Tomar notas"}
-        </Button>
-        <Button variant="neon" onClick={() => { sonarAlerta(); setFase("explicar"); }}>
-          <SkipForward />
-          Ya terminé, quiero explicar
-        </Button>
-      </div>
-
-      {panelNotas && (
-        <div className="glass w-full space-y-3 p-4 text-left">
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="font-pixel text-[10px] text-primary text-glow-amarillo">MIS NOTAS</h2>
-            <span className="text-xs text-muted-foreground">Se guardan solas</span>
+    <main className="mx-auto w-full max-w-[1500px] px-4 pb-28 lg:px-8">
+      <div className="grid gap-5 lg:grid-cols-[320px_minmax(0,1fr)_360px]">
+        {/* ——— Fuentes ——— */}
+        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
+          <div className="flex items-center gap-2">
+            <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">FUENTES</h2>
+            <button
+              type="button"
+              aria-label="Agregar fuente"
+              onClick={() => {
+                const url = window.prompt("Pegá el enlace de la fuente");
+                if (!url) return;
+                const titulo = window.prompt("¿Cómo la llamamos?") ?? url;
+                setFuentes((f) => [...f, { id: crypto.randomUUID(), titulo, url }]);
+              }}
+              className="ml-auto flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
+            >
+              <PixelMas size={10} />
+            </button>
           </div>
-          <Textarea
-            value={notas}
-            onChange={(e) => setNotas(e.target.value)}
-            placeholder="Anotá ideas, datos y palabras clave mientras investigás…"
-            className="min-h-40 resize-y bg-transparent p-3 text-sm leading-relaxed"
-          />
-          <p className="text-xs text-muted-foreground">
-            Cuando termines vas a poder usar estas notas como base de tu explicación.
+
+          <label className="glass flex items-center gap-2 px-3 py-2">
+            <PixelLupa size={12} className="shrink-0 text-muted-foreground" />
+            <input
+              value={buscarFuente}
+              onChange={(e) => setBuscarFuente(e.target.value)}
+              placeholder="buscar en tus fuentes..."
+              className="w-full bg-transparent text-xs outline-none placeholder:text-muted-foreground"
+            />
+          </label>
+
+          <ul className="max-h-[24rem] space-y-2 overflow-y-auto pr-1">
+            {buscadas.map((f) => (
+              <li key={f.id} className="glass glass-hover flex items-center gap-2 p-3">
+                <a
+                  href={f.url}
+                  target="_blank"
+                  rel="noreferrer noopener"
+                  className="min-w-0 flex-1"
+                >
+                  <span className="block truncate text-sm">{f.titulo}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">{f.url}</span>
+                </a>
+                <button
+                  type="button"
+                  aria-label="Quitar fuente"
+                  onClick={() => setFuentes((l) => l.filter((x) => x.id !== f.id))}
+                  className="text-xs text-muted-foreground hover:text-destructive"
+                >
+                  ✕
+                </button>
+              </li>
+            ))}
+            {!buscadas.length && (
+              <li className="py-8 text-center text-xs text-muted-foreground">
+                Guardá acá los enlaces que vas usando.
+              </li>
+            )}
+          </ul>
+        </section>
+
+        {/* ——— Cronómetro ——— */}
+        <section className="flex flex-col items-center gap-6">
+          <p className="font-pixel text-center text-[10px] text-muted-foreground">
+            {tema.data?.title ?? "..."}
           </p>
-        </div>
-      )}
+
+          <div className="relative flex aspect-square w-full max-w-[26rem] items-center justify-center">
+            <svg viewBox="0 0 100 100" className="absolute inset-0 -rotate-90">
+              <circle cx="50" cy="50" r={R} fill="none" stroke="var(--surface-2)" strokeWidth="5" />
+              <circle
+                cx="50"
+                cy="50"
+                r={R}
+                fill="none"
+                stroke="var(--primary)"
+                strokeWidth="5"
+                strokeLinecap="round"
+                strokeDasharray={perimetro}
+                strokeDashoffset={perimetro * (1 - progreso)}
+                style={{
+                  transition: "stroke-dashoffset 1s linear",
+                  filter: "drop-shadow(0 0 8px var(--primary))",
+                }}
+              />
+            </svg>
+
+            <button
+              type="button"
+              onClick={() => setPausado((p) => !p)}
+              aria-label={pausado ? "Seguir" : "Pausar"}
+              className="flex flex-col items-center gap-3"
+            >
+              <span className="text-foreground">
+                {pausado ? <PixelPlay size={56} /> : <PixelPausa size={56} />}
+              </span>
+              <span className="font-pixel text-4xl text-primary text-glow-amarillo">
+                {formatearTiempo(restante)}
+              </span>
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              sonarAlerta();
+              setFase("explicar");
+            }}
+            aria-label="Terminar y explicar"
+            className="flex size-16 items-center justify-center rounded-full border border-primary/40 bg-primary/15 text-primary glow-amarillo transition-transform hover:scale-105"
+          >
+            <PixelCheck size={30} />
+          </button>
+
+          <div className="flex flex-col items-center gap-2">
+            <Chispa skin={skin} estado="concentrado" size="sm" />
+            <BurbujaChispa>
+              {restante <= 60
+                ? "¡Último minuto! Empezá a ordenar las ideas."
+                : "Estoy concentrado con vos. Investigá tranquilo."}
+            </BurbujaChispa>
+          </div>
+        </section>
+
+        {/* ——— Notas con pestañas ——— */}
+        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
+          <div className="flex items-center gap-2">
+            <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">NOTAS</h2>
+            <span className="ml-auto text-[11px] text-muted-foreground">Se guardan solas</span>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            {pestanas.map((p) => (
+              <button
+                key={p.id}
+                type="button"
+                onDoubleClick={() => {
+                  const nombre = window.prompt("Nombre de la pestaña", p.nombre);
+                  if (nombre)
+                    setPestanas((l) =>
+                      l.map((x) => (x.id === p.id ? { ...x, nombre } : x)),
+                    );
+                }}
+                onClick={() => setActiva(p.id)}
+                className={cn(
+                  "rounded-full px-3 py-1.5 text-[11px] transition-colors",
+                  p.id === activa
+                    ? "bg-primary/20 text-primary"
+                    : "bg-white/5 text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {p.nombre}
+              </button>
+            ))}
+            <button
+              type="button"
+              aria-label="Nueva pestaña"
+              onClick={() => {
+                const id = crypto.randomUUID();
+                setPestanas((l) => [
+                  ...l,
+                  { id, nombre: `Pestaña ${l.length + 1}`, texto: "" },
+                ]);
+                setActiva(id);
+              }}
+              className="flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
+            >
+              <PixelMas size={10} />
+            </button>
+          </div>
+
+          <Textarea
+            value={notaActiva.texto}
+            onChange={(e) =>
+              setPestanas((l) =>
+                l.map((x) => (x.id === notaActiva.id ? { ...x, texto: e.target.value } : x)),
+              )
+            }
+            placeholder="Anotá ideas, datos y palabras clave mientras investigás…"
+            className="min-h-[22rem] resize-y bg-transparent p-3 text-sm leading-relaxed"
+          />
+        </section>
+      </div>
     </main>
   );
 }
