@@ -132,6 +132,8 @@ function LayoutApp() {
       <div className="pt-6">
         <Outlet />
       </div>
+      <DynamicIsland />
     </div>
+    </MusicaProvider>
   );
 }
