@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AvatarUsuario } from "@/components/avatar-usuario";
+import { DynamicIsland } from "@/components/dynamic-island";
+import { MusicaProvider } from "@/lib/musica";
 import { Button } from "@/components/ui/button";
 import {
   PixelCartas,
@@ -51,6 +53,7 @@ function LayoutApp() {
   }
 
   return (
+    <MusicaProvider>
     <div className="min-h-screen">
       <header className="sticky top-0 z-30 w-full border-b border-white/5 bg-background/60 backdrop-blur-xl">
         <div className="mx-auto w-full max-w-[1500px] px-4 py-3 lg:px-8">
@@ -129,6 +132,8 @@ function LayoutApp() {
       <div className="pt-6">
         <Outlet />
       </div>
+      <DynamicIsland />
     </div>
+    </MusicaProvider>
   );
 }
