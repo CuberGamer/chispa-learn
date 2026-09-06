@@ -3,6 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AvatarUsuario } from "@/components/avatar-usuario";
+import { DynamicIsland } from "@/components/dynamic-island";
+import { MusicaProvider } from "@/lib/musica";
 import { Button } from "@/components/ui/button";
 import {
   PixelCartas,
