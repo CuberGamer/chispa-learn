@@ -105,6 +105,14 @@ export function PanelMusica({ className }: { className?: string }) {
   const [vista, setVista] = useState<"actual" | "lista">("lista");
   const [busqueda, setBusqueda] = useState("");
 
+  // Cuando se detiene/quita la pista (p. ej. con la "x" de la isla dinámica),
+  // volver a la vista de reproducción para mostrar el estado SIN MÚSICA.
+  const prevActual = useRef(m.actual);
+  useEffect(() => {
+    if (prevActual.current && !m.actual) setVista("actual");
+    prevActual.current = m.actual;
+  }, [m.actual]);
+
   const filtradas = m.pistas.filter((p) =>
     `${p.nombre} ${p.descripcion}`.toLowerCase().includes(busqueda.trim().toLowerCase()),
   );
