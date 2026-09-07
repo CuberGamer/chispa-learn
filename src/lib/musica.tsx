@@ -217,6 +217,8 @@ type MusicaContexto = {
   anterior: () => void;
   quitarTodo: () => void;
   irA: (fraccion: number) => void;
+  /** Niveles de frecuencia 0..1 (largo = cantidad de barras). null si no hay audio. */
+  obtenerNiveles: (cantidad: number) => number[] | null;
 };
 
 const Ctx = createContext<MusicaContexto | null>(null);
