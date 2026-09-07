@@ -217,6 +217,8 @@ type MusicaContexto = {
   anterior: () => void;
   quitarTodo: () => void;
   irA: (fraccion: number) => void;
+  /** Niveles de frecuencia 0..1 (largo = cantidad de barras). null si no hay audio. */
+  obtenerNiveles: (cantidad: number) => number[] | null;
 };
 
 const Ctx = createContext<MusicaContexto | null>(null);
@@ -224,6 +226,8 @@ const Ctx = createContext<MusicaContexto | null>(null);
 export function MusicaProvider({ children }: { children: ReactNode }) {
   const ctxRef = useRef<AudioContext | null>(null);
   const masterRef = useRef<GainNode | null>(null);
+  const analizadorRef = useRef<AnalyserNode | null>(null);
+  const datosRef = useRef<Uint8Array | null>(null);
   const detenerRef = useRef<(() => void) | null>(null);
   const inicioRef = useRef(0);
   const indiceRef = useRef(-1);
@@ -244,9 +248,15 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
       const ctx = new AC();
       const master = ctx.createGain();
       master.gain.value = 0.7;
+      const analizador = ctx.createAnalyser();
+      analizador.fftSize = 256;
+      analizador.smoothingTimeConstant = 0.75;
+      master.connect(analizador);
       master.connect(ctx.destination);
       ctxRef.current = ctx;
       masterRef.current = master;
+      analizadorRef.current = analizador;
+      datosRef.current = new Uint8Array(analizador.frequencyBinCount);
     }
     void ctxRef.current.resume();
     return ctxRef.current;
