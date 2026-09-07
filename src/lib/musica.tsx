@@ -9,21 +9,208 @@ import {
 } from "react";
 
 /**
- * Reproductor de música local: el usuario sube archivos de audio de su
- * dispositivo y suenan mientras estudia. Todo vive en memoria (URLs objeto).
+ * Música de concentración generada en el navegador con Web Audio API.
+ * Son paisajes sonoros propios (ruido filtrado + acordes suaves), así que
+ * no dependen de ningún archivo con derechos de autor ni de internet.
  */
 
-export type Pista = { id: string; nombre: string; url: string };
+export type Pista = {
+  id: string;
+  nombre: string;
+  descripcion: string;
+  /** Construye el sonido; devuelve una función para detenerlo. */
+  crear: (ctx: AudioContext, destino: AudioNode) => () => void;
+};
+
+/* ————— helpers de síntesis ————— */
+
+function bufferRuido(ctx: AudioContext, segundos = 4) {
+  const buffer = ctx.createBuffer(1, ctx.sampleRate * segundos, ctx.sampleRate);
+  const datos = buffer.getChannelData(0);
+  for (let i = 0; i < datos.length; i++) datos[i] = Math.random() * 2 - 1;
+  return buffer;
+}
+
+/** Ruido continuo pasado por un filtro. */
+function capaRuido(
+  ctx: AudioContext,
+  destino: AudioNode,
+  opciones: { tipo: BiquadFilterType; frecuencia: number; q?: number; volumen: number },
+) {
+  const fuente = ctx.createBufferSource();
+  fuente.buffer = bufferRuido(ctx);
+  fuente.loop = true;
+  const filtro = ctx.createBiquadFilter();
+  filtro.type = opciones.tipo;
+  filtro.frequency.value = opciones.frecuencia;
+  if (opciones.q) filtro.Q.value = opciones.q;
+  const gan = ctx.createGain();
+  gan.gain.value = opciones.volumen;
+  fuente.connect(filtro).connect(gan).connect(destino);
+  fuente.start();
+  return { fuente, filtro, gan };
+}
+
+/** Oscilación lenta sobre un parámetro (respiración del sonido). */
+function vaiven(
+  ctx: AudioContext,
+  parametro: AudioParam,
+  opciones: { periodo: number; profundidad: number; centro: number },
+) {
+  const lfo = ctx.createOscillator();
+  lfo.frequency.value = 1 / opciones.periodo;
+  const amp = ctx.createGain();
+  amp.gain.value = opciones.profundidad;
+  parametro.value = opciones.centro;
+  lfo.connect(amp).connect(parametro);
+  lfo.start();
+  return lfo;
+}
+
+function acorde(
+  ctx: AudioContext,
+  destino: AudioNode,
+  notas: number[],
+  volumen: number,
+  tipo: OscillatorType = "sine",
+) {
+  const osciladores = notas.map((hz, i) => {
+    const osc = ctx.createOscillator();
+    osc.type = tipo;
+    osc.frequency.value = hz;
+    const gan = ctx.createGain();
+    gan.gain.value = 0;
+    // cada nota respira a distinto ritmo → textura viva
+    vaiven(ctx, gan.gain, {
+      periodo: 11 + i * 4,
+      profundidad: volumen * 0.5,
+      centro: volumen * 0.6,
+    });
+    osc.connect(gan).connect(destino);
+    osc.start();
+    return osc;
+  });
+  return osciladores;
+}
+
+/* ————— catálogo ————— */
+
+export const CATALOGO: Pista[] = [
+  {
+    id: "lluvia",
+    nombre: "Lluvia tranquila",
+    descripcion: "Lluvia constante para tapar el ruido de alrededor",
+    crear: (ctx, destino) => {
+      const a = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 1400, volumen: 0.22 });
+      const b = capaRuido(ctx, destino, { tipo: "highpass", frecuencia: 2600, volumen: 0.05 });
+      const lfo = vaiven(ctx, a.filtro.frequency, { periodo: 17, profundidad: 400, centro: 1400 });
+      return () => {
+        a.fuente.stop();
+        b.fuente.stop();
+        lfo.stop();
+      };
+    },
+  },
+  {
+    id: "olas",
+    nombre: "Olas del mar",
+    descripcion: "Olas lentas que van y vienen",
+    crear: (ctx, destino) => {
+      const capa = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 900, volumen: 0.001 });
+      const lfoVol = vaiven(ctx, capa.gan.gain, { periodo: 9, profundidad: 0.14, centro: 0.16 });
+      const lfoFiltro = vaiven(ctx, capa.filtro.frequency, {
+        periodo: 9,
+        profundidad: 450,
+        centro: 900,
+      });
+      return () => {
+        capa.fuente.stop();
+        lfoVol.stop();
+        lfoFiltro.stop();
+      };
+    },
+  },
+  {
+    id: "ruido-marron",
+    nombre: "Ruido marrón",
+    descripcion: "Zumbido grave y parejo, ideal para leer",
+    crear: (ctx, destino) => {
+      const a = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 500, volumen: 0.28 });
+      const b = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 180, volumen: 0.18 });
+      return () => {
+        a.fuente.stop();
+        b.fuente.stop();
+      };
+    },
+  },
+  {
+    id: "drone",
+    nombre: "Nebulosa",
+    descripcion: "Acordes espaciales muy lentos",
+    crear: (ctx, destino) => {
+      const oscs = acorde(ctx, destino, [110, 164.81, 220, 329.63], 0.05);
+      const fondo = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 700, volumen: 0.05 });
+      return () => {
+        oscs.forEach((o) => o.stop());
+        fondo.fuente.stop();
+      };
+    },
+  },
+  {
+    id: "estudio",
+    nombre: "Sala de estudio",
+    descripcion: "Aire suave con notas cálidas de fondo",
+    crear: (ctx, destino) => {
+      const aire = capaRuido(ctx, destino, { tipo: "bandpass", frecuencia: 800, q: 0.7, volumen: 0.12 });
+      const oscs = acorde(ctx, destino, [196, 261.63, 392], 0.035, "triangle");
+      return () => {
+        aire.fuente.stop();
+        oscs.forEach((o) => o.stop());
+      };
+    },
+  },
+  {
+    id: "alfa",
+    nombre: "Ondas alfa",
+    descripcion: "Pulso binaural suave para entrar en foco",
+    crear: (ctx, destino) => {
+      const izq = ctx.createOscillator();
+      const der = ctx.createOscillator();
+      izq.frequency.value = 200;
+      der.frequency.value = 210; // 10 Hz de diferencia
+      const panIzq = ctx.createStereoPanner();
+      panIzq.pan.value = -1;
+      const panDer = ctx.createStereoPanner();
+      panDer.pan.value = 1;
+      const gan = ctx.createGain();
+      gan.gain.value = 0.06;
+      izq.connect(panIzq).connect(gan);
+      der.connect(panDer).connect(gan);
+      gan.connect(destino);
+      izq.start();
+      der.start();
+      const fondo = capaRuido(ctx, destino, { tipo: "lowpass", frecuencia: 600, volumen: 0.07 });
+      return () => {
+        izq.stop();
+        der.stop();
+        fondo.fuente.stop();
+      };
+    },
+  },
+];
+
+/** Duración simbólica de un "tema" (para la barra de progreso). */
+const CICLO_SEGUNDOS = 300;
 
 type MusicaContexto = {
   pistas: Pista[];
-  /** Índice de la pista actual; -1 si no hay ninguna cargada. */
   indice: number;
   actual: Pista | null;
   sonando: boolean;
-  /** 0..1 */
+  /** 0..1 dentro del ciclo actual */
   progreso: number;
-  agregarArchivos: (archivos: Iterable<File>) => void;
+  volumen: number;
+  cambiarVolumen: (v: number) => void;
   reproducir: (i: number) => void;
   alternar: () => void;
   siguiente: () => void;
@@ -35,136 +222,128 @@ type MusicaContexto = {
 const Ctx = createContext<MusicaContexto | null>(null);
 
 export function MusicaProvider({ children }: { children: ReactNode }) {
-  const audioRef = useRef<HTMLAudioElement | null>(null);
-  const [pistas, setPistas] = useState<Pista[]>([]);
+  const ctxRef = useRef<AudioContext | null>(null);
+  const masterRef = useRef<GainNode | null>(null);
+  const detenerRef = useRef<(() => void) | null>(null);
+  const inicioRef = useRef(0);
+  const indiceRef = useRef(-1);
+
   const [indice, setIndice] = useState(-1);
   const [sonando, setSonando] = useState(false);
   const [progreso, setProgreso] = useState(0);
+  const [volumen, setVolumen] = useState(0.7);
 
-  const pistasRef = useRef(pistas);
-  pistasRef.current = pistas;
-  const indiceRef = useRef(indice);
   indiceRef.current = indice;
 
-  const reproducir = useCallback((i: number) => {
-    const lista = pistasRef.current;
-    const audio = audioRef.current;
-    if (!audio || lista.length === 0) return;
-    const idx = ((i % lista.length) + lista.length) % lista.length;
-    const pista = lista[idx];
-    if (!pista) return;
-    if (audio.src !== pista.url) audio.src = pista.url;
-    void audio.play().catch(() => setSonando(false));
-    setIndice(idx);
-    setSonando(true);
+  const asegurarContexto = useCallback(() => {
+    if (!ctxRef.current) {
+      const AC =
+        window.AudioContext ??
+        (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext;
+      if (!AC) return null;
+      const ctx = new AC();
+      const master = ctx.createGain();
+      master.gain.value = 0.7;
+      master.connect(ctx.destination);
+      ctxRef.current = ctx;
+      masterRef.current = master;
+    }
+    void ctxRef.current.resume();
+    return ctxRef.current;
   }, []);
 
-  const siguiente = useCallback(() => {
-    if (pistasRef.current.length) reproducir(indiceRef.current + 1);
-  }, [reproducir]);
-
-  const anterior = useCallback(() => {
-    if (pistasRef.current.length) reproducir(indiceRef.current - 1);
-  }, [reproducir]);
-
-  useEffect(() => {
-    const audio = new Audio();
-    audioRef.current = audio;
-    const alTiempo = () =>
-      setProgreso(audio.duration ? audio.currentTime / audio.duration : 0);
-    const alTerminar = () => {
-      const lista = pistasRef.current;
-      if (lista.length > 1) {
-        const idx = (indiceRef.current + 1) % lista.length;
-        const pista = lista[idx];
-        if (pista) {
-          audio.src = pista.url;
-          void audio.play().catch(() => setSonando(false));
-          setIndice(idx);
-        }
-      } else {
-        setSonando(false);
-        setProgreso(0);
-      }
-    };
-    audio.addEventListener("timeupdate", alTiempo);
-    audio.addEventListener("ended", alTerminar);
-    return () => {
-      audio.pause();
-      audio.removeEventListener("timeupdate", alTiempo);
-      audio.removeEventListener("ended", alTerminar);
-      audioRef.current = null;
-    };
+  const detenerSonido = useCallback(() => {
+    detenerRef.current?.();
+    detenerRef.current = null;
   }, []);
 
-  const agregarArchivos = useCallback(
-    (archivos: Iterable<File>) => {
-      const nuevas: Pista[] = [];
-      for (const f of archivos) {
-        if (!f.type.startsWith("audio/")) continue;
-        nuevas.push({
-          id: crypto.randomUUID(),
-          nombre: f.name.replace(/\.[a-z0-9]+$/i, ""),
-          url: URL.createObjectURL(f),
-        });
-      }
-      if (!nuevas.length) return;
-      setPistas((p) => {
-        const lista = [...p, ...nuevas];
-        if (indiceRef.current === -1) {
-          // arranca la primera recién agregada
-          setTimeout(() => reproducir(lista.length - nuevas.length), 0);
-        }
-        return lista;
-      });
+  const reproducir = useCallback(
+    (i: number) => {
+      const ctx = asegurarContexto();
+      const master = masterRef.current;
+      if (!ctx || !master) return;
+      const idx = ((i % CATALOGO.length) + CATALOGO.length) % CATALOGO.length;
+      const pista = CATALOGO[idx];
+      if (!pista) return;
+      detenerSonido();
+      detenerRef.current = pista.crear(ctx, master);
+      inicioRef.current = ctx.currentTime;
+      setIndice(idx);
+      setSonando(true);
+      setProgreso(0);
     },
-    [reproducir],
+    [asegurarContexto, detenerSonido],
   );
 
   const alternar = useCallback(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
+    const ctx = ctxRef.current;
     if (indiceRef.current === -1) {
-      if (pistasRef.current.length) reproducir(0);
+      reproducir(0);
       return;
     }
-    if (audio.paused) {
-      void audio.play().catch(() => setSonando(false));
-      setSonando(true);
-    } else {
-      audio.pause();
+    if (!ctx) return;
+    if (ctx.state === "running") {
+      void ctx.suspend();
       setSonando(false);
+    } else {
+      void ctx.resume();
+      setSonando(true);
     }
   }, [reproducir]);
 
+  const siguiente = useCallback(() => reproducir(indiceRef.current + 1), [reproducir]);
+  const anterior = useCallback(() => reproducir(indiceRef.current - 1), [reproducir]);
+
   const quitarTodo = useCallback(() => {
-    const audio = audioRef.current;
-    audio?.pause();
-    if (audio) audio.removeAttribute("src");
-    pistasRef.current.forEach((p) => URL.revokeObjectURL(p.url));
-    setPistas([]);
+    detenerSonido();
+    void ctxRef.current?.suspend();
     setIndice(-1);
     setSonando(false);
     setProgreso(0);
-  }, []);
+  }, [detenerSonido]);
 
   const irA = useCallback((fraccion: number) => {
-    const audio = audioRef.current;
-    if (!audio || !audio.duration) return;
-    audio.currentTime = Math.min(1, Math.max(0, fraccion)) * audio.duration;
+    const ctx = ctxRef.current;
+    if (!ctx) return;
+    inicioRef.current = ctx.currentTime - Math.min(1, Math.max(0, fraccion)) * CICLO_SEGUNDOS;
   }, []);
 
-  const actual = indice >= 0 ? (pistas[indice] ?? null) : null;
+  const cambiarVolumen = useCallback((v: number) => {
+    const val = Math.min(1, Math.max(0, v));
+    setVolumen(val);
+    if (masterRef.current) masterRef.current.gain.value = val;
+  }, []);
+
+  useEffect(() => {
+    const id = setInterval(() => {
+      const ctx = ctxRef.current;
+      if (!ctx || ctx.state !== "running" || indiceRef.current === -1) return;
+      const t = (ctx.currentTime - inicioRef.current) % CICLO_SEGUNDOS;
+      setProgreso(t / CICLO_SEGUNDOS);
+    }, 500);
+    return () => clearInterval(id);
+  }, []);
+
+  useEffect(
+    () => () => {
+      detenerRef.current?.();
+      void ctxRef.current?.close();
+    },
+    [],
+  );
+
+  const actual = indice >= 0 ? (CATALOGO[indice] ?? null) : null;
 
   return (
     <Ctx.Provider
       value={{
-        pistas,
+        pistas: CATALOGO,
         indice,
         actual,
         sonando,
         progreso,
-        agregarArchivos,
+        volumen,
+        cambiarVolumen,
         reproducir,
         alternar,
         siguiente,
