@@ -123,23 +123,7 @@ function Sesion() {
     },
   });
 
-  useEffect(() => {
-    if (fase !== "timer" || pausado) return;
-    const id = setInterval(() => {
-      setRestante((r) => {
-        if (r <= 1) {
-          clearInterval(id);
-          sonarAlerta();
-          setFase("explicar");
-          return 0;
-        }
-        return r - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [fase, pausado]);
-
-  const progreso = 1 - restante / (minutos * 60);
+  const progreso = 1 - sesion.restante / (minutos * 60);
   const R = 46;
   const perimetro = 2 * Math.PI * R;
 
