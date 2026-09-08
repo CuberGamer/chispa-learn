@@ -278,9 +278,10 @@ function DetalleTema() {
                 variant="chispa"
                 size="xl"
                 className="font-pixel w-full text-base"
-                onClick={() =>
-                  navigate({ to: "/sesion", search: { tema: tema.data!.id, minutos } })
-                }
+                onClick={() => {
+                  sesion.iniciar(tema.data!.id, minutos);
+                  navigate({ to: "/sesion", search: { tema: tema.data!.id, minutos } });
+                }}
               >
                 INICIAR
               </Button>
