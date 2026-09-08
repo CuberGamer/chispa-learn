@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tema/$id")({
