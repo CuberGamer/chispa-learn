@@ -254,13 +254,20 @@ function Sesion() {
                 type="button"
                 onClick={() => setPausado((p) => !p)}
                 aria-label={pausado ? "Reanudar" : "Pausar"}
-                className={`flex size-16 items-center justify-center rounded-full border transition-transform hover:scale-105 active:scale-95 ${
+                className={`flex items-center justify-center gap-3 rounded-full border px-7 py-4 transition-transform hover:scale-105 active:scale-95 ${
                   pausado
-                    ? "border-primary/60 bg-primary/20 text-primary glow-amarillo"
-                    : "glass text-foreground hover:border-primary/50 hover:text-primary"
+                    ? "border-primary/60 bg-primary/20 text-primary glow-amarillo animate-pulse"
+                    : "glass size-16 px-0 text-foreground hover:border-primary/50 hover:text-primary"
                 }`}
               >
-                {pausado ? <PixelPlay size={30} /> : <PixelPausa size={30} />}
+                {pausado ? (
+                  <>
+                    <PixelPlay size={26} />
+                    <span className="font-pixel text-[10px]">SEGUIR</span>
+                  </>
+                ) : (
+                  <PixelPausa size={30} />
+                )}
               </button>
               <span
                 className={`font-pixel text-4xl transition-opacity ${
