@@ -29,14 +29,15 @@ export function DynamicIsland() {
   const [expandida, setExpandida] = useState(false);
 
   const enSesion = location.pathname === "/sesion";
-  const mostrarSesion = sesion.activa && !enSesion;
+  const activa = sesion.activa;
+  const mostrarSesion = activa && !enSesion;
 
   if (mostrarSesion) {
     return (
       <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
         <Link
           to="/sesion"
-          search={{ tema: sesion.activa.temaId, minutos: sesion.activa.minutos }}
+          search={{ tema: activa.temaId, minutos: activa.minutos }}
           className="glass flex items-center gap-3 rounded-full px-4 py-2.5 transition-transform hover:scale-105"
         >
           <span className={cn("text-primary", !sesion.pausado && "animate-pulso")}>
