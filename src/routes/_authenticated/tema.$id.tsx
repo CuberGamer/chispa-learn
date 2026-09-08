@@ -158,6 +158,7 @@ function DetalleTema() {
   const { id } = Route.useParams();
   const skin = useSkin();
   const navigate = useNavigate();
+  const sesion = useSesionActiva();
   const [minutos, setMinutos] = useState(30);
 
   const tema = useQuery({
