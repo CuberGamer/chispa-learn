@@ -383,6 +383,7 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
         alternar,
         siguiente,
         anterior,
+        obtenerNiveles,
         quitarTodo,
         irA,
       }}
