@@ -249,19 +249,30 @@ function Sesion() {
               />
             </svg>
 
-            <button
-              type="button"
-              onClick={() => setPausado((p) => !p)}
-              aria-label={pausado ? "Seguir" : "Pausar"}
-              className="flex flex-col items-center gap-3"
-            >
-              <span className="text-foreground">
-                {pausado ? <PixelPlay size={56} /> : <PixelPausa size={56} />}
-              </span>
-              <span className="font-pixel text-4xl text-primary text-glow-amarillo">
+            <div className="flex flex-col items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setPausado((p) => !p)}
+                aria-label={pausado ? "Reanudar" : "Pausar"}
+                className={`flex size-16 items-center justify-center rounded-full border transition-transform hover:scale-105 active:scale-95 ${
+                  pausado
+                    ? "border-primary/60 bg-primary/20 text-primary glow-amarillo"
+                    : "glass text-foreground hover:border-primary/50 hover:text-primary"
+                }`}
+              >
+                {pausado ? <PixelPlay size={30} /> : <PixelPausa size={30} />}
+              </button>
+              <span
+                className={`font-pixel text-4xl transition-opacity ${
+                  pausado ? "animate-pulse text-primary text-glow-amarillo" : "text-primary text-glow-amarillo"
+                }`}
+              >
                 {formatearTiempo(restante)}
               </span>
-            </button>
+              {pausado && (
+                <span className="font-pixel text-[8px] text-muted-foreground">EN PAUSA</span>
+              )}
+            </div>
           </div>
 
           <button
