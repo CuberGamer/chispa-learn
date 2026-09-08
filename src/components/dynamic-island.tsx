@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLocation, Link } from "@tanstack/react-router";
 
 import {
   PixelAnterior,
+  PixelChispita,
   PixelEquis,
   PixelImagen,
   PixelNota,
@@ -10,7 +12,9 @@ import {
   PixelSiguiente,
 } from "@/components/pixel-icons";
 import { BarraProgresoMusica, Onda } from "@/components/panel-musica";
+import { formatearTiempo } from "@/lib/chispa";
 import { useMusica } from "@/lib/musica";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 /**
