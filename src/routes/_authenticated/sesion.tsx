@@ -277,10 +277,7 @@ function Sesion() {
 
           <button
             type="button"
-            onClick={() => {
-              sonarAlerta();
-              setFase("explicar");
-            }}
+            onClick={sesion.terminar}
             aria-label="Terminar y explicar"
             className="flex size-16 items-center justify-center rounded-full border border-primary/40 bg-primary/15 text-primary glow-amarillo transition-transform hover:scale-105"
           >
