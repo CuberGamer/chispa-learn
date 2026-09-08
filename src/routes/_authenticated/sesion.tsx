@@ -287,7 +287,7 @@ function Sesion() {
           <div className="flex flex-col items-center gap-2">
             <Chispa skin={skin} estado="concentrado" size="sm" />
             <BurbujaChispa>
-              {restante <= 60
+              {sesion.restante <= 60
                 ? "¡Último minuto! Empezá a ordenar las ideas."
                 : "Estoy concentrado con vos. Investigá tranquilo."}
             </BurbujaChispa>
