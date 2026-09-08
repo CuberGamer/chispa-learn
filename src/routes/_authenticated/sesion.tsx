@@ -18,8 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
-import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
+import { actualizarRacha, formatearTiempo } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
