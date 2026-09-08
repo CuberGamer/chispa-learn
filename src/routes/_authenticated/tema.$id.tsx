@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/tema/$id")({
@@ -157,6 +158,7 @@ function DetalleTema() {
   const { id } = Route.useParams();
   const skin = useSkin();
   const navigate = useNavigate();
+  const sesion = useSesionActiva();
   const [minutos, setMinutos] = useState(30);
 
   const tema = useQuery({
@@ -276,9 +278,10 @@ function DetalleTema() {
                 variant="chispa"
                 size="xl"
                 className="font-pixel w-full text-base"
-                onClick={() =>
-                  navigate({ to: "/sesion", search: { tema: tema.data!.id, minutos } })
-                }
+                onClick={() => {
+                  sesion.iniciar(tema.data!.id, minutos);
+                  navigate({ to: "/sesion", search: { tema: tema.data!.id, minutos } });
+                }}
               >
                 INICIAR
               </Button>

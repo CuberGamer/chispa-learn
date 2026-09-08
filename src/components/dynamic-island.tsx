@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { useLocation, Link } from "@tanstack/react-router";
 
 import {
   PixelAnterior,
+  PixelChispita,
   PixelEquis,
   PixelImagen,
   PixelNota,
@@ -10,7 +12,9 @@ import {
   PixelSiguiente,
 } from "@/components/pixel-icons";
 import { BarraProgresoMusica, Onda } from "@/components/panel-musica";
+import { formatearTiempo } from "@/lib/chispa";
 import { useMusica } from "@/lib/musica";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 /**
@@ -20,7 +24,47 @@ import { cn } from "@/lib/utils";
 export function DynamicIsland() {
   const { pistas, actual, sonando, alternar, siguiente, anterior, quitarTodo } =
     useMusica();
+  const sesion = useSesionActiva();
+  const location = useLocation();
   const [expandida, setExpandida] = useState(false);
+
+  const enSesion = location.pathname === "/sesion";
+  const activa = sesion.activa;
+  const mostrarSesion = activa && !enSesion;
+
+  if (mostrarSesion) {
+    return (
+      <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
+        <Link
+          to="/sesion"
+          search={{ tema: activa.temaId, minutos: activa.minutos }}
+          className="glass flex items-center gap-3 rounded-full px-4 py-2.5 transition-transform hover:scale-105"
+        >
+          <span className={cn("text-primary", !sesion.pausado && "animate-pulso")}>
+            <PixelChispita size={16} />
+          </span>
+          <span className="font-pixel text-[10px] text-foreground">
+            {sesion.fase === "explicar" ? "EXPLICÁ" : formatearTiempo(sesion.restante)}
+          </span>
+          <span className="text-[10px] text-muted-foreground">
+            {sesion.pausado ? "(pausa)" : sesion.fase === "explicar" ? "Terminó el tiempo" : "en curso"}
+          </span>
+          <button
+            type="button"
+            aria-label={sesion.pausado ? "Reanudar" : "Pausar"}
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              sesion.alternarPausa();
+            }}
+            className="rounded-full bg-primary/20 p-1.5 text-primary transition-transform hover:scale-105"
+          >
+            {sesion.pausado ? <PixelPlay size={12} /> : <PixelPausa size={12} />}
+          </button>
+        </Link>
+      </div>
+    );
+  }
 
   if (!pistas.length || !actual) return null;
 

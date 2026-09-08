@@ -18,8 +18,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
-import { actualizarRacha, formatearTiempo, sonarAlerta } from "@/lib/chispa";
+import { actualizarRacha, formatearTiempo } from "@/lib/chispa";
 import { evaluarLogros } from "@/lib/logros";
+import { useSesionActiva } from "@/lib/sesion-activa";
 import { cn } from "@/lib/utils";
 
 const searchSchema = z.object({
@@ -48,10 +49,15 @@ function Sesion() {
   const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
   const navigate = useNavigate();
+  const sesion = useSesionActiva();
 
-  const [restante, setRestante] = useState(minutos * 60);
-  const [pausado, setPausado] = useState(false);
-  const [fase, setFase] = useState<"timer" | "explicar">("timer");
+  // Sincronizamos la URL con el estado global al montar: si no hay sesión
+  // activa pero la URL trae parámetros, la iniciamos.
+  useEffect(() => {
+    if (!sesion.activa) {
+      sesion.iniciar(temaId, minutos);
+    }
+  }, []);
 
   const claveNotas = `chispa-notas-${temaId}`;
   const claveFuentes = `chispa-fuentes-${temaId}`;
@@ -117,27 +123,11 @@ function Sesion() {
     },
   });
 
-  useEffect(() => {
-    if (fase !== "timer" || pausado) return;
-    const id = setInterval(() => {
-      setRestante((r) => {
-        if (r <= 1) {
-          clearInterval(id);
-          sonarAlerta();
-          setFase("explicar");
-          return 0;
-        }
-        return r - 1;
-      });
-    }, 1000);
-    return () => clearInterval(id);
-  }, [fase, pausado]);
-
-  const progreso = 1 - restante / (minutos * 60);
+  const progreso = 1 - sesion.restante / (minutos * 60);
   const R = 46;
   const perimetro = 2 * Math.PI * R;
 
-  if (fase === "explicar") {
+  if (sesion.fase === "explicar") {
     return (
       <Explicacion
         temaId={temaId}
@@ -148,7 +138,10 @@ function Sesion() {
           localStorage.removeItem(claveNotas);
           setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: "" }]);
         }}
-        onListo={() => navigate({ to: "/inicio" })}
+        onListo={() => {
+          sesion.cerrar();
+          navigate({ to: "/inicio" });
+        }}
       />
     );
   }
@@ -250,44 +243,41 @@ function Sesion() {
             </svg>
 
             <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setPausado((p) => !p)}
-                aria-label={pausado ? "Reanudar" : "Pausar"}
-                className={`flex items-center justify-center gap-3 rounded-full border px-7 py-4 transition-transform hover:scale-105 active:scale-95 ${
-                  pausado
-                    ? "border-primary/60 bg-primary/20 text-primary glow-amarillo animate-pulse"
-                    : "glass size-16 px-0 text-foreground hover:border-primary/50 hover:text-primary"
-                }`}
-              >
-                {pausado ? (
-                  <>
-                    <PixelPlay size={26} />
-                    <span className="font-pixel text-[10px]">SEGUIR</span>
-                  </>
-                ) : (
-                  <PixelPausa size={30} />
-                )}
-              </button>
-              <span
-                className={`font-pixel text-4xl transition-opacity ${
-                  pausado ? "animate-pulse text-primary text-glow-amarillo" : "text-primary text-glow-amarillo"
-                }`}
-              >
-                {formatearTiempo(restante)}
-              </span>
-              {pausado && (
-                <span className="font-pixel text-[8px] text-muted-foreground">EN PAUSA</span>
+            <button
+              type="button"
+              onClick={sesion.alternarPausa}
+              aria-label={sesion.pausado ? "Reanudar" : "Pausar"}
+              className={`flex items-center justify-center gap-3 rounded-full border px-7 py-4 transition-transform hover:scale-105 active:scale-95 ${
+                sesion.pausado
+                  ? "border-primary/60 bg-primary/20 text-primary glow-amarillo animate-pulse"
+                  : "glass size-16 px-0 text-foreground hover:border-primary/50 hover:text-primary"
+              }`}
+            >
+              {sesion.pausado ? (
+                <>
+                  <PixelPlay size={26} />
+                  <span className="font-pixel text-[10px]">SEGUIR</span>
+                </>
+              ) : (
+                <PixelPausa size={30} />
               )}
+            </button>
+            <span
+              className={`font-pixel text-4xl transition-opacity ${
+                sesion.pausado ? "animate-pulse text-primary text-glow-amarillo" : "text-primary text-glow-amarillo"
+              }`}
+            >
+              {formatearTiempo(sesion.restante)}
+            </span>
+            {sesion.pausado && (
+              <span className="font-pixel text-[8px] text-muted-foreground">EN PAUSA</span>
+            )}
             </div>
           </div>
 
           <button
             type="button"
-            onClick={() => {
-              sonarAlerta();
-              setFase("explicar");
-            }}
+            onClick={sesion.terminar}
             aria-label="Terminar y explicar"
             className="flex size-16 items-center justify-center rounded-full border border-primary/40 bg-primary/15 text-primary glow-amarillo transition-transform hover:scale-105"
           >
@@ -297,7 +287,7 @@ function Sesion() {
           <div className="flex flex-col items-center gap-2">
             <Chispa skin={skin} estado="concentrado" size="sm" />
             <BurbujaChispa>
-              {restante <= 60
+              {sesion.restante <= 60
                 ? "¡Último minuto! Empezá a ordenar las ideas."
                 : "Estoy concentrado con vos. Investigá tranquilo."}
             </BurbujaChispa>
