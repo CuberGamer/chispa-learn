@@ -243,35 +243,35 @@ function Sesion() {
             </svg>
 
             <div className="flex flex-col items-center gap-3">
-              <button
-                type="button"
-                onClick={() => setPausado((p) => !p)}
-                aria-label={pausado ? "Reanudar" : "Pausar"}
-                className={`flex items-center justify-center gap-3 rounded-full border px-7 py-4 transition-transform hover:scale-105 active:scale-95 ${
-                  pausado
-                    ? "border-primary/60 bg-primary/20 text-primary glow-amarillo animate-pulse"
-                    : "glass size-16 px-0 text-foreground hover:border-primary/50 hover:text-primary"
-                }`}
-              >
-                {pausado ? (
-                  <>
-                    <PixelPlay size={26} />
-                    <span className="font-pixel text-[10px]">SEGUIR</span>
-                  </>
-                ) : (
-                  <PixelPausa size={30} />
-                )}
-              </button>
-              <span
-                className={`font-pixel text-4xl transition-opacity ${
-                  pausado ? "animate-pulse text-primary text-glow-amarillo" : "text-primary text-glow-amarillo"
-                }`}
-              >
-                {formatearTiempo(restante)}
-              </span>
-              {pausado && (
-                <span className="font-pixel text-[8px] text-muted-foreground">EN PAUSA</span>
+            <button
+              type="button"
+              onClick={sesion.alternarPausa}
+              aria-label={sesion.pausado ? "Reanudar" : "Pausar"}
+              className={`flex items-center justify-center gap-3 rounded-full border px-7 py-4 transition-transform hover:scale-105 active:scale-95 ${
+                sesion.pausado
+                  ? "border-primary/60 bg-primary/20 text-primary glow-amarillo animate-pulse"
+                  : "glass size-16 px-0 text-foreground hover:border-primary/50 hover:text-primary"
+              }`}
+            >
+              {sesion.pausado ? (
+                <>
+                  <PixelPlay size={26} />
+                  <span className="font-pixel text-[10px]">SEGUIR</span>
+                </>
+              ) : (
+                <PixelPausa size={30} />
               )}
+            </button>
+            <span
+              className={`font-pixel text-4xl transition-opacity ${
+                sesion.pausado ? "animate-pulse text-primary text-glow-amarillo" : "text-primary text-glow-amarillo"
+              }`}
+            >
+              {formatearTiempo(sesion.restante)}
+            </span>
+            {sesion.pausado && (
+              <span className="font-pixel text-[8px] text-muted-foreground">EN PAUSA</span>
+            )}
             </div>
           </div>
 
