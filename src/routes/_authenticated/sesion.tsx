@@ -127,7 +127,7 @@ function Sesion() {
   const R = 46;
   const perimetro = 2 * Math.PI * R;
 
-  if (fase === "explicar") {
+  if (sesion.fase === "explicar") {
     return (
       <Explicacion
         temaId={temaId}
@@ -138,7 +138,10 @@ function Sesion() {
           localStorage.removeItem(claveNotas);
           setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: "" }]);
         }}
-        onListo={() => navigate({ to: "/inicio" })}
+        onListo={() => {
+          sesion.cerrar();
+          navigate({ to: "/inicio" });
+        }}
       />
     );
   }
