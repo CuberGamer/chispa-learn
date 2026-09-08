@@ -324,6 +324,31 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
     if (masterRef.current) masterRef.current.gain.value = val;
   }, []);
 
+  /** Promedia el espectro en `cantidad` bandas (0..1). */
+  const obtenerNiveles = useCallback((cantidad: number) => {
+    const an = analizadorRef.current;
+    const datos = datosRef.current;
+    const ctx = ctxRef.current;
+    if (!an || !datos || !ctx || ctx.state !== "running") return null;
+    an.getByteFrequencyData(datos as Uint8Array<ArrayBuffer>);
+    // usamos sólo la parte baja/media del espectro, donde vive la energía
+    const util = Math.floor(datos.length * 0.65);
+    const paso = Math.max(1, Math.floor(util / cantidad));
+    const salida: number[] = [];
+    for (let b = 0; b < cantidad; b++) {
+      let suma = 0;
+      let n = 0;
+      for (let i = b * paso; i < (b + 1) * paso && i < util; i++) {
+        suma += datos[i] ?? 0;
+        n++;
+      }
+      const medio = n ? suma / n / 255 : 0;
+      // realce para que las bandas altas también se vean
+      salida.push(Math.min(1, Math.pow(medio, 0.7) * (1 + (b / cantidad) * 1.2)));
+    }
+    return salida;
+  }, []);
+
   useEffect(() => {
     const id = setInterval(() => {
       const ctx = ctxRef.current;
@@ -358,6 +383,7 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
         alternar,
         siguiente,
         anterior,
+        obtenerNiveles,
         quitarTodo,
         irA,
       }}

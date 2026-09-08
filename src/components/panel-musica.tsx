@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   PixelAnterior,
@@ -13,23 +13,54 @@ import {
 import { useMusica } from "@/lib/musica";
 import { cn } from "@/lib/utils";
 
-/** Barra decorativa de "onda" tipo ecualizador. */
+const BARRAS = 24;
+const BASE = [3, 6, 9, 5, 11, 7, 4, 10, 6, 8, 3, 9, 5, 7, 4, 10, 6, 3, 8, 5, 9, 4, 7, 3];
+
+/** Ecualizador que se mueve con el sonido real de la música. */
 export function Onda({ sonando, className }: { sonando: boolean; className?: string }) {
-  const alturas = [3, 6, 9, 5, 11, 7, 4, 10, 6, 8, 3, 9, 5, 7, 4, 10, 6, 3, 8, 5, 9, 4, 7, 3];
+  const { obtenerNiveles } = useMusica();
+  const barrasRef = useRef<(HTMLSpanElement | null)[]>([]);
+
+  useEffect(() => {
+    if (!sonando) {
+      barrasRef.current.forEach((el, i) => {
+        if (el) el.style.height = `${(BASE[i] ?? 4) * 0.8}px`;
+      });
+      return;
+    }
+    let raf = 0;
+    const suave = new Array<number>(BARRAS).fill(0);
+    const animar = () => {
+      const niveles = obtenerNiveles(BARRAS);
+      for (let i = 0; i < BARRAS; i++) {
+        const objetivo = niveles?.[i] ?? 0;
+        // subida rápida, bajada suave
+        suave[i] =
+          objetivo > (suave[i] ?? 0)
+            ? (suave[i] ?? 0) + (objetivo - (suave[i] ?? 0)) * 0.5
+            : (suave[i] ?? 0) * 0.86;
+        const el = barrasRef.current[i];
+        if (el) el.style.height = `${3 + (suave[i] ?? 0) * 27}px`;
+      }
+      raf = requestAnimationFrame(animar);
+    };
+    raf = requestAnimationFrame(animar);
+    return () => cancelAnimationFrame(raf);
+  }, [sonando, obtenerNiveles]);
+
   return (
     <div
-      className={cn(
-        "flex h-6 items-end gap-[3px] text-primary/70",
-        sonando && "animate-pulso",
-        className,
-      )}
+      className={cn("flex h-8 items-end gap-[3px] text-primary/80", className)}
       aria-hidden
     >
-      {alturas.map((h, i) => (
+      {BASE.map((h, i) => (
         <span
           key={i}
-          className="w-[3px] rounded-sm bg-current"
-          style={{ height: `${h * 2}px` }}
+          ref={(el) => {
+            barrasRef.current[i] = el;
+          }}
+          className="w-[3px] rounded-full bg-current"
+          style={{ height: `${h * 0.8}px` }}
         />
       ))}
     </div>
