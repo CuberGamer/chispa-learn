@@ -49,10 +49,15 @@ function Sesion() {
   const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
   const navigate = useNavigate();
+  const sesion = useSesionActiva();
 
-  const [restante, setRestante] = useState(minutos * 60);
-  const [pausado, setPausado] = useState(false);
-  const [fase, setFase] = useState<"timer" | "explicar">("timer");
+  // Sincronizamos la URL con el estado global al montar: si no hay sesión
+  // activa pero la URL trae parámetros, la iniciamos.
+  useEffect(() => {
+    if (!sesion.activa) {
+      sesion.iniciar(temaId, minutos);
+    }
+  }, []);
 
   const claveNotas = `chispa-notas-${temaId}`;
   const claveFuentes = `chispa-fuentes-${temaId}`;
