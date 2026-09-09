@@ -24,6 +24,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
 import { supabase } from "@/integrations/supabase/client";
 import { getTemaDelDia } from "@/lib/chispa";
+import { generarTemaIA } from "@/lib/temas.functions";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/inicio")({
