@@ -99,6 +99,8 @@ export const generarTemaIA = createServerFn({ method: "POST" })
     const parsed = extraerJSON(content);
     const tema = esquemaTemaIA.parse(parsed);
 
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
     // Evitar duplicados por título (insensible a mayúsculas)
     const { data: existente } = await supabaseAdmin
       .from("topics")
