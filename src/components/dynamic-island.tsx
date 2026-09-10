@@ -34,7 +34,7 @@ export function DynamicIsland() {
 
   if (mostrarSesion) {
     return (
-      <div className="fixed bottom-5 left-1/2 z-40 -translate-x-1/2">
+      <div className="fixed bottom-5 left-1/2 z-40 flex -translate-x-1/2 items-center gap-2">
         <Link
           to="/sesion"
           search={{ tema: activa.temaId, minutos: activa.minutos }}
