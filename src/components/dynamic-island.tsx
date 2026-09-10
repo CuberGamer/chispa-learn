@@ -62,6 +62,40 @@ export function DynamicIsland() {
             {sesion.pausado ? <PixelPlay size={12} /> : <PixelPausa size={12} />}
           </button>
         </Link>
+        {actual ? (
+          <div className="glass flex items-center gap-2 rounded-full px-3 py-2.5">
+            <span className={cn("text-primary", sonando && "animate-pulso")}>
+              <PixelNota size={13} />
+            </span>
+            <span className="font-pixel max-w-28 truncate text-[9px] text-muted-foreground">
+              {actual.nombre}
+            </span>
+            <button
+              type="button"
+              aria-label="Anterior"
+              onClick={anterior}
+              className="rounded-full p-1 text-muted-foreground transition-colors hover:text-primary"
+            >
+              <PixelAnterior size={12} />
+            </button>
+            <button
+              type="button"
+              aria-label={sonando ? "Pausar música" : "Reproducir música"}
+              onClick={alternar}
+              className="rounded-full bg-primary/20 p-1.5 text-primary transition-transform hover:scale-105"
+            >
+              {sonando ? <PixelPausa size={12} /> : <PixelPlay size={12} />}
+            </button>
+            <button
+              type="button"
+              aria-label="Siguiente"
+              onClick={siguiente}
+              className="rounded-full p-1 text-muted-foreground transition-colors hover:text-primary"
+            >
+              <PixelSiguiente size={12} />
+            </button>
+          </div>
+        ) : null}
       </div>
     );
   }
