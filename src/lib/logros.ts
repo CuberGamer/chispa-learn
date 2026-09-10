@@ -1,19 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
+import { calcularEstadisticas, logrosNuevos, type Estadisticas } from "./logros-calculo";
+
+export type { Estadisticas };
 
 export type Logro = {
   id: string;
   name: string;
   description: string;
   icon: string;
-};
-
-export type Estadisticas = {
-  sesiones: number;
-  temasDistintos: number;
-  minutos: number;
-  rachaActual: number;
-  rachaMaxima: number;
-  explicacionMasLarga: number;
 };
 
 /** Junta las estadísticas del usuario a partir de sus sesiones y su racha. */
@@ -31,37 +25,7 @@ export async function getEstadisticas(userId: string): Promise<Estadisticas> {
   ]);
   if (error) throw error;
 
-  const filas = sesiones ?? [];
-
-  return {
-    sesiones: filas.length,
-    temasDistintos: new Set(filas.map((s) => s.topic_id)).size,
-    minutos: filas.reduce((acc, s) => acc + (s.duration_minutes ?? 0), 0),
-    rachaActual: racha?.current_streak ?? 0,
-    rachaMaxima: racha?.longest_streak ?? 0,
-    explicacionMasLarga: filas.reduce(
-      (max, s) => Math.max(max, s.explanation_text?.length ?? 0),
-      0,
-    ),
-  };
-}
-
-/** Reglas de desbloqueo por nombre de logro. */
-function cumple(nombre: string, e: Estadisticas) {
-  switch (nombre) {
-    case "Primera chispa":
-      return e.sesiones >= 1;
-    case "Diez temas":
-      return e.temasDistintos >= 10;
-    case "Racha de 7":
-      return e.rachaMaxima >= 7 || e.rachaActual >= 7;
-    case "Maratón":
-      return e.minutos >= 300;
-    case "Explicador":
-      return e.explicacionMasLarga >= 1000;
-    default:
-      return false;
-  }
+  return calcularEstadisticas(sesiones, racha);
 }
 
 /** Evalúa los logros del usuario y guarda los nuevos. Devuelve los recién desbloqueados. */
@@ -72,9 +36,10 @@ export async function evaluarLogros(userId: string): Promise<Logro[]> {
     supabase.from("user_achievements").select("achievement_id").eq("user_id", userId),
   ]);
 
-  const yaTengo = new Set((mios ?? []).map((m) => m.achievement_id));
-  const nuevos = (logros ?? []).filter(
-    (l) => !yaTengo.has(l.id) && cumple(l.name, stats),
+  const nuevos = logrosNuevos(
+    logros,
+    (mios ?? []).map((m) => m.achievement_id),
+    stats,
   );
 
   if (nuevos.length > 0) {
