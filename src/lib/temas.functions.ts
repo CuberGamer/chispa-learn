@@ -65,7 +65,7 @@ function extraerJSON(texto: string): unknown {
   }
   // Si viene envuelto en bloque de código markdown
   const match = limpio.match(/```(?:json)?\s*([\s\S]*?)```/);
-  if (match) {
+  if (match?.[1]) {
     return JSON.parse(match[1]);
   }
   // Buscar el primer objeto JSON válido
