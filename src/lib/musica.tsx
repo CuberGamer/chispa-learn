@@ -398,6 +398,8 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
         cambiarVolumen,
         reproducir,
         alternar,
+        pausar,
+        reanudar,
         siguiente,
         anterior,
         obtenerNiveles,
