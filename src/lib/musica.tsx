@@ -213,6 +213,10 @@ type MusicaContexto = {
   cambiarVolumen: (v: number) => void;
   reproducir: (i: number) => void;
   alternar: () => void;
+  /** Pausa sin perder la pista actual (uso automático, p. ej. al salir de la sesión). */
+  pausar: () => void;
+  /** Reanuda la pista actual si había uno cargado. */
+  reanudar: () => void;
   siguiente: () => void;
   anterior: () => void;
   quitarTodo: () => void;
