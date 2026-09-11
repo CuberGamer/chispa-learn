@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocation, Link } from "@tanstack/react-router";
 
 import {
@@ -22,15 +22,42 @@ import { cn } from "@/lib/utils";
  * expande a la tarjeta completa al tocarla. Vive sobre todas las pantallas.
  */
 export function DynamicIsland() {
-  const { pistas, actual, sonando, alternar, siguiente, anterior, quitarTodo } =
-    useMusica();
+  const {
+    pistas,
+    actual,
+    sonando,
+    alternar,
+    siguiente,
+    anterior,
+    quitarTodo,
+    pausar,
+    reanudar,
+  } = useMusica();
   const sesion = useSesionActiva();
   const location = useLocation();
   const [expandida, setExpandida] = useState(false);
+  const sonabaRef = useRef(false);
 
   const enSesion = location.pathname === "/sesion";
   const activa = sesion.activa;
   const mostrarSesion = activa && !enSesion;
+
+  /**
+   * Al salir de la sesión, la música se pausa y solo queda la isla del tema.
+   * Al volver a la sesión, la música se reanuda si estaba sonando.
+   */
+  useEffect(() => {
+    if (mostrarSesion) {
+      if (sonando) {
+        sonabaRef.current = true;
+        pausar();
+      }
+    } else if (sonabaRef.current) {
+      sonabaRef.current = false;
+      reanudar();
+    }
+  }, [mostrarSesion, sonando, pausar, reanudar]);
+
 
   if (mostrarSesion) {
     return (
@@ -62,40 +89,6 @@ export function DynamicIsland() {
             {sesion.pausado ? <PixelPlay size={12} /> : <PixelPausa size={12} />}
           </button>
         </Link>
-        {actual ? (
-          <div className="glass flex items-center gap-2 rounded-full px-3 py-2.5">
-            <span className={cn("text-primary", sonando && "animate-pulso")}>
-              <PixelNota size={13} />
-            </span>
-            <span className="font-pixel max-w-28 truncate text-[9px] text-muted-foreground">
-              {actual.nombre}
-            </span>
-            <button
-              type="button"
-              aria-label="Anterior"
-              onClick={anterior}
-              className="rounded-full p-1 text-muted-foreground transition-colors hover:text-primary"
-            >
-              <PixelAnterior size={12} />
-            </button>
-            <button
-              type="button"
-              aria-label={sonando ? "Pausar música" : "Reproducir música"}
-              onClick={alternar}
-              className="rounded-full bg-primary/20 p-1.5 text-primary transition-transform hover:scale-105"
-            >
-              {sonando ? <PixelPausa size={12} /> : <PixelPlay size={12} />}
-            </button>
-            <button
-              type="button"
-              aria-label="Siguiente"
-              onClick={siguiente}
-              className="rounded-full p-1 text-muted-foreground transition-colors hover:text-primary"
-            >
-              <PixelSiguiente size={12} />
-            </button>
-          </div>
-        ) : null}
       </div>
     );
   }

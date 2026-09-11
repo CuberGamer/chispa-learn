@@ -213,6 +213,10 @@ type MusicaContexto = {
   cambiarVolumen: (v: number) => void;
   reproducir: (i: number) => void;
   alternar: () => void;
+  /** Pausa sin perder la pista actual (uso automático, p. ej. al salir de la sesión). */
+  pausar: () => void;
+  /** Reanuda la pista actual si había uno cargado. */
+  reanudar: () => void;
   siguiente: () => void;
   anterior: () => void;
   quitarTodo: () => void;
@@ -301,6 +305,19 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
     }
   }, [reproducir]);
 
+  const pausar = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (ctx && ctx.state === "running") void ctx.suspend();
+    setSonando(false);
+  }, []);
+
+  const reanudar = useCallback(() => {
+    const ctx = ctxRef.current;
+    if (indiceRef.current === -1 || !ctx) return;
+    void ctx.resume();
+    setSonando(true);
+  }, []);
+
   const siguiente = useCallback(() => reproducir(indiceRef.current + 1), [reproducir]);
   const anterior = useCallback(() => reproducir(indiceRef.current - 1), [reproducir]);
 
@@ -381,6 +398,8 @@ export function MusicaProvider({ children }: { children: ReactNode }) {
         cambiarVolumen,
         reproducir,
         alternar,
+        pausar,
+        reanudar,
         siguiente,
         anterior,
         obtenerNiveles,
