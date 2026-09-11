@@ -22,15 +22,42 @@ import { cn } from "@/lib/utils";
  * expande a la tarjeta completa al tocarla. Vive sobre todas las pantallas.
  */
 export function DynamicIsland() {
-  const { pistas, actual, sonando, alternar, siguiente, anterior, quitarTodo } =
-    useMusica();
+  const {
+    pistas,
+    actual,
+    sonando,
+    alternar,
+    siguiente,
+    anterior,
+    quitarTodo,
+    pausar,
+    reanudar,
+  } = useMusica();
   const sesion = useSesionActiva();
   const location = useLocation();
   const [expandida, setExpandida] = useState(false);
+  const sonabaRef = useRef(false);
 
   const enSesion = location.pathname === "/sesion";
   const activa = sesion.activa;
   const mostrarSesion = activa && !enSesion;
+
+  /**
+   * Al salir de la sesión, la música se pausa y solo queda la isla del tema.
+   * Al volver a la sesión, la música se reanuda si estaba sonando.
+   */
+  useEffect(() => {
+    if (mostrarSesion) {
+      if (sonando) {
+        sonabaRef.current = true;
+        pausar();
+      }
+    } else if (sonabaRef.current) {
+      sonabaRef.current = false;
+      reanudar();
+    }
+  }, [mostrarSesion, sonando, pausar, reanudar]);
+
 
   if (mostrarSesion) {
     return (
