@@ -118,7 +118,8 @@ function Sesion() {
     if (!g) return;
     try {
       const parsed = JSON.parse(g) as Fuente[];
-      if (Array.isArray(parsed)) setFuentes(parsed);
+      if (Array.isArray(parsed))
+        setFuentes(parsed.map((f) => ({ ...f, url: normalizarUrlFuente(f.url) })));
     } catch {
       /* fuentes corruptas: se ignoran */
     }
