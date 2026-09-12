@@ -32,10 +32,42 @@ function AuthPage() {
   const [avisoEmail, setAvisoEmail] = useState(false);
 
   useEffect(() => {
-    void supabase.auth.getSession().then(({ data }) => {
-      if (data.session) navigate({ to: "/inicio", replace: true });
+    let activo = true;
+
+    void supabase.auth.getUser().then(({ data }) => {
+      if (activo && data.user) void navigate({ to: "/inicio", replace: true });
     });
+
+    const { data } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === "SIGNED_IN" && session?.user) {
+        setCargando(false);
+        void navigate({ to: "/inicio", replace: true });
+      }
+    });
+
+    return () => {
+      activo = false;
+      data.subscription.unsubscribe();
+    };
   }, [navigate]);
+
+  async function entrarConGoogle() {
+    setCargando(true);
+    try {
+      const result = await lovable.auth.signInWithOAuth("google", {
+        redirect_uri: window.location.origin,
+      });
+      if (result.error) throw result.error;
+      if (result.redirected) return;
+
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) throw error ?? new Error("No se pudo confirmar la sesión");
+      await navigate({ to: "/inicio", replace: true });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "No se pudo entrar con Google");
+      setCargando(false);
+    }
+  }
 
   async function enviar(e: React.FormEvent) {
     e.preventDefault();
@@ -146,20 +178,7 @@ function AuthPage() {
             size="lg"
             className="w-full"
             disabled={cargando}
-            onClick={async () => {
-              setCargando(true);
-              try {
-                const result = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
-                });
-                if (result.error) throw result.error;
-                if (result.redirected) return;
-                navigate({ to: "/inicio", replace: true });
-              } catch (error) {
-                toast.error(error instanceof Error ? error.message : "No se pudo entrar con Google");
-                setCargando(false);
-              }
-            }}
+            onClick={entrarConGoogle}
           >
             <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
               <path fill="#EA4335" d="M12 5.04c1.62 0 3.06.56 4.2 1.64l3.12-3.12C17.46 1.8 14.96.75 12 .75 7.65.75 3.89 3.25 2.03 6.85l3.66 2.84C6.62 7.01 9.03 5.04 12 5.04z"/>
