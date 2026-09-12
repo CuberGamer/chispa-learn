@@ -186,8 +186,9 @@ function Sesion() {
               onClick={() => {
                 const url = window.prompt("Pegá el enlace de la fuente");
                 if (!url) return;
-                const titulo = window.prompt("¿Cómo la llamamos?") ?? url;
-                setFuentes((f) => [...f, { id: crypto.randomUUID(), titulo, url }]);
+                const absoluta = normalizarUrlFuente(url);
+                const titulo = window.prompt("¿Cómo la llamamos?") ?? absoluta;
+                setFuentes((f) => [...f, { id: crypto.randomUUID(), titulo, url: absoluta }]);
               }}
               className="ml-auto flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
             >
