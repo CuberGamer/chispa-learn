@@ -45,6 +45,24 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 type Fuente = { id: string; titulo: string; url: string };
 type Pestana = { id: string; nombre: string; texto: string };
 
+/** Fuentes confiables sugeridas por la app. */
+const FUENTES_RECOMENDADAS: Fuente[] = [
+  {
+    id: "rec-google-scholar",
+    titulo: "Google Scholar",
+    url: "https://scholar.google.com",
+  },
+];
+
+/** Convierte lo que pega el usuario en una URL absoluta; si no, abre una búsqueda. */
+function normalizarUrlFuente(entrada: string): string {
+  const limpio = entrada.trim();
+  if (!limpio) return "https://scholar.google.com";
+  if (/^https?:\/\//i.test(limpio)) return limpio;
+  if (/^[\w-]+(\.[\w-]+)+/.test(limpio)) return `https://${limpio}`;
+  return `https://scholar.google.com/scholar?q=${encodeURIComponent(limpio)}`;
+}
+
 function Sesion() {
   const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
