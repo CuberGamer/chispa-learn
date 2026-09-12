@@ -234,6 +234,32 @@ function Sesion() {
               </li>
             )}
           </ul>
+
+          <div className="border-t border-white/10 pt-3">
+            <h3 className="font-pixel mb-2 text-[8px] text-muted-foreground">
+              FUENTES CONFIABLES
+            </h3>
+            <ul className="space-y-2">
+              {FUENTES_RECOMENDADAS.map((f) => (
+                <li key={f.id}>
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="glass glass-hover flex items-center gap-2 p-2.5"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-medium">{f.titulo}</span>
+                      <span className="block truncate text-[10px] text-muted-foreground">
+                        {f.url}
+                      </span>
+                    </span>
+                    <span className="font-pixel shrink-0 text-[8px] text-primary">ABRIR ↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         {/* ——— Cronómetro ——— */}
