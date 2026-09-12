@@ -45,6 +45,24 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 type Fuente = { id: string; titulo: string; url: string };
 type Pestana = { id: string; nombre: string; texto: string };
 
+/** Fuentes confiables sugeridas por la app. */
+const FUENTES_RECOMENDADAS: Fuente[] = [
+  {
+    id: "rec-google-scholar",
+    titulo: "Google Scholar",
+    url: "https://scholar.google.com",
+  },
+];
+
+/** Convierte lo que pega el usuario en una URL absoluta; si no, abre una búsqueda. */
+function normalizarUrlFuente(entrada: string): string {
+  const limpio = entrada.trim();
+  if (!limpio) return "https://scholar.google.com";
+  if (/^https?:\/\//i.test(limpio)) return limpio;
+  if (/^[\w-]+(\.[\w-]+)+/.test(limpio)) return `https://${limpio}`;
+  return `https://scholar.google.com/scholar?q=${encodeURIComponent(limpio)}`;
+}
+
 function Sesion() {
   const skin = useSkin();
   const { tema: temaId, minutos } = Route.useSearch();
@@ -100,7 +118,8 @@ function Sesion() {
     if (!g) return;
     try {
       const parsed = JSON.parse(g) as Fuente[];
-      if (Array.isArray(parsed)) setFuentes(parsed);
+      if (Array.isArray(parsed))
+        setFuentes(parsed.map((f) => ({ ...f, url: normalizarUrlFuente(f.url) })));
     } catch {
       /* fuentes corruptas: se ignoran */
     }
@@ -167,8 +186,9 @@ function Sesion() {
               onClick={() => {
                 const url = window.prompt("Pegá el enlace de la fuente");
                 if (!url) return;
-                const titulo = window.prompt("¿Cómo la llamamos?") ?? url;
-                setFuentes((f) => [...f, { id: crypto.randomUUID(), titulo, url }]);
+                const absoluta = normalizarUrlFuente(url);
+                const titulo = window.prompt("¿Cómo la llamamos?") ?? absoluta;
+                setFuentes((f) => [...f, { id: crypto.randomUUID(), titulo, url: absoluta }]);
               }}
               className="ml-auto flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
             >
@@ -214,6 +234,32 @@ function Sesion() {
               </li>
             )}
           </ul>
+
+          <div className="border-t border-white/10 pt-3">
+            <h3 className="font-pixel mb-2 text-[8px] text-muted-foreground">
+              FUENTES CONFIABLES
+            </h3>
+            <ul className="space-y-2">
+              {FUENTES_RECOMENDADAS.map((f) => (
+                <li key={f.id}>
+                  <a
+                    href={f.url}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                    className="glass glass-hover flex items-center gap-2 p-2.5"
+                  >
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-xs font-medium">{f.titulo}</span>
+                      <span className="block truncate text-[10px] text-muted-foreground">
+                        {f.url}
+                      </span>
+                    </span>
+                    <span className="font-pixel shrink-0 text-[8px] text-primary">ABRIR ↗</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
         </section>
 
         {/* ——— Cronómetro ——— */}
