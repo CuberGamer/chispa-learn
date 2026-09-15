@@ -220,3 +220,73 @@
 @utility animate-pulso {
   animation: chispa-pulso 2.4s ease-in-out infinite;
 }
+
+/* ===== Login V7: haces de luz diagonales y transiciones de tarjeta ===== */
+
+@keyframes auth-haces {
+  0% {
+    transform: translate3d(-6%, -4%, 0) rotate(-18deg);
+  }
+  50% {
+    transform: translate3d(5%, 4%, 0) rotate(-18deg);
+  }
+  100% {
+    transform: translate3d(-6%, -4%, 0) rotate(-18deg);
+  }
+}
+
+@utility animate-haces {
+  animation: auth-haces 14s ease-in-out infinite;
+}
+
+@keyframes auth-tarjeta-in {
+  0% {
+    opacity: 0;
+    transform: translateY(24px) scale(0.96);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@utility animate-tarjeta-in {
+  animation: auth-tarjeta-in 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-swap-in {
+  0% {
+    opacity: 0;
+    transform: perspective(900px) rotateY(-14deg) scale(0.97);
+    filter: blur(4px);
+  }
+  100% {
+    opacity: 1;
+    transform: perspective(900px) rotateY(0deg) scale(1);
+    filter: blur(0);
+  }
+}
+
+@utility animate-swap-in {
+  animation: auth-swap-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes auth-brillo-btn {
+  0%,
+  100% {
+    box-shadow:
+      0 0 18px oklch(0.9 0.19 100 / 0.5),
+      0 0 44px oklch(0.9 0.19 100 / 0.25);
+  }
+  50% {
+    box-shadow:
+      0 0 28px oklch(0.9 0.19 100 / 0.75),
+      0 0 70px oklch(0.9 0.19 100 / 0.4);
+  }
+}
+
+@utility animate-brillo-btn {
+  animation: auth-brillo-btn 2.6s ease-in-out infinite;
+}
