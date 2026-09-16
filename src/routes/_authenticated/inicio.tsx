@@ -64,6 +64,8 @@ function Inicio() {
   const [panelFiltros, setPanelFiltros] = useState(false);
   const [tagActiva, setTagActiva] = useState<string | null>(null);
   const [orden, setOrden] = useState<Orden>("recientes");
+  const [creando, setCreando] = useState(false);
+  const [instruccion, setInstruccion] = useState("");
 
   const tema = useQuery({ queryKey: ["tema-del-dia"], queryFn: getTemaDelDia });
 
@@ -242,12 +244,32 @@ function Inicio() {
   const streak = racha.data?.current_streak ?? 0;
   const buscando = panelFiltros || busqueda.length > 0 || Boolean(tagActiva);
 
+  const crearTemaIA = useMutation({
+    mutationFn: async (instruccion: string) => {
+      const nuevo = await generarTemaIA({
+        data: { instruccion: instruccion.trim() || undefined },
+      });
+      return nuevo;
+    },
+    onSuccess: (nuevo) => {
+      setCreando(false);
+      setInstruccion("");
+      toast.success("¡Tema creado con IA! ✨");
+      queryClient.invalidateQueries({ queryKey: ["tema-del-dia"] });
+      navigate({ to: "/tema/$id", params: { id: nuevo.id } });
+    },
+    onError: (e) =>
+      toast.error(e instanceof Error ? e.message : "No pude crear el tema con IA"),
+  });
+
   async function temaAleatorio() {
     const { data } = await supabase.from("topics").select("id").limit(200);
     const lista = data ?? [];
     const elegido = lista[Math.floor(Math.random() * lista.length)];
     if (!elegido) {
-      toast.error("Todavía no hay temas cargados");
+      // No hay temas en la base: generamos uno con IA como fallback.
+      toast("No hay temas cargados, te genero uno con IA…");
+      crearTemaIA.mutate("");
       return;
     }
     navigate({ to: "/tema/$id", params: { id: elegido.id } });
