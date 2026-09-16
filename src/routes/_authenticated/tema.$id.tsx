@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 
 import { AvatarUsuario } from "@/components/avatar-usuario";
 import { BotonCompartir } from "@/components/boton-compartir";
+import { BotonReportar } from "@/components/boton-reportar";
 import { Chispa, BurbujaChispa, type ChispaSkin } from "@/components/chispa";
 import { PanelMusica } from "@/components/panel-musica";
 import {
@@ -348,6 +349,7 @@ function DetalleTema() {
                     {s.aplausos}
                   </span>
                   <BotonCompartir id={s.id} titulo={tema.data?.title ?? "Tema"} variante="ghost" />
+                  <BotonReportar sessionId={s.id} />
                 </div>
               </li>
             ))}

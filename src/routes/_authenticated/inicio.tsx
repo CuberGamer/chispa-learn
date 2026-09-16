@@ -316,21 +316,61 @@ function Inicio() {
         <div className="grid grid-cols-2 gap-4">
           <button
             type="button"
-            onClick={() => navigate({ to: "/biblioteca" })}
-            className="glass glass-hover flex flex-col items-center gap-2 p-5 text-center"
+            onClick={() => setCreando((v) => !v)}
+            className={cn(
+              "glass glass-hover flex flex-col items-center gap-2 p-5 text-center",
+              creando && "border-primary/50",
+            )}
           >
             <PixelMas size={26} className="text-primary" />
-            <span className="font-pixel text-[8px] text-muted-foreground">CREAR TEMA</span>
+            <span className="font-pixel text-[8px] text-muted-foreground">
+              {creando ? "CERRAR" : "CREAR TEMA"}
+            </span>
           </button>
           <button
             type="button"
             onClick={temaAleatorio}
+            disabled={crearTemaIA.isPending}
             className="glass glass-hover flex flex-col items-center gap-2 p-5 text-center"
           >
             <PixelDado size={26} className="text-cian" />
-            <span className="font-pixel text-[8px] text-muted-foreground">TEMA ALEATORIO</span>
+            <span className="font-pixel text-[8px] text-muted-foreground">
+              {crearTemaIA.isPending ? "GENERANDO…" : "TEMA ALEATORIO"}
+            </span>
           </button>
         </div>
+
+        {creando && (
+          <form
+            className="glass space-y-3 p-5"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!crearTemaIA.isPending) crearTemaIA.mutate(instruccion);
+            }}
+          >
+            <p className="font-pixel text-[9px] text-primary text-glow-amarillo">
+              CREAR TEMA CON IA
+            </p>
+            <Input
+              value={instruccion}
+              onChange={(e) => setInstruccion(e.target.value)}
+              placeholder="¿De qué querés aprender? (ej. agujeros negros)"
+              maxLength={200}
+              aria-label="Instrucción para el nuevo tema"
+            />
+            <Button
+              type="submit"
+              variant="chispa"
+              className="font-pixel w-full text-[10px]"
+              disabled={crearTemaIA.isPending}
+            >
+              {crearTemaIA.isPending ? "GENERANDO…" : "CREAR ✨"}
+            </Button>
+            <p className="text-[11px] text-muted-foreground">
+              Dejalo vacío y la IA elige un tema sorprendente por vos.
+            </p>
+          </form>
+        )}
       </aside>
 
       {/* ── Columna central: buscador + feed ── */}
