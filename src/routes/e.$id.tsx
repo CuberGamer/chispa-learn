@@ -74,13 +74,21 @@ function ExplicacionPublica() {
         <>
           <article className="glass space-y-4 p-5">
             <div className="flex items-center gap-3">
-              <AvatarUsuario
-                path={sesion.data.foto}
-                skin={sesion.data.skin}
-                nombre={sesion.data.autor}
-              />
+              <Link to="/u/$id" params={{ id: sesion.data.user_id }}>
+                <AvatarUsuario
+                  path={sesion.data.foto}
+                  skin={sesion.data.skin}
+                  nombre={sesion.data.autor}
+                />
+              </Link>
               <div className="min-w-0">
-                <p className="font-pixel truncate text-[10px]">{sesion.data.autor}</p>
+                <Link
+                  to="/u/$id"
+                  params={{ id: sesion.data.user_id }}
+                  className="font-pixel block truncate text-[10px] hover:text-primary"
+                >
+                  {sesion.data.autor}
+                </Link>
                 <p className="truncate text-sm text-primary">{sesion.data.titulo}</p>
               </div>
             </div>
