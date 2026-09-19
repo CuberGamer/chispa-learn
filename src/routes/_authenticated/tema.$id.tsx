@@ -350,11 +350,16 @@ function DetalleTema() {
                   </div>
                 </div>
 
-                {s.explanation_text && (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                    {s.explanation_text}
-                  </p>
-                )}
+                {s.explanation_text &&
+                  (verExplicaciones ? (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                      {s.explanation_text}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Explicación oculta — apretá “ver explicaciones” para leerla.
+                    </p>
+                  ))}
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-pixel inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">
