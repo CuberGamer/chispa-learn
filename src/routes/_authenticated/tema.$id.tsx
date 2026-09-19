@@ -161,6 +161,7 @@ function DetalleTema() {
   const navigate = useNavigate();
   const sesion = useSesionActiva();
   const [minutos, setMinutos] = useState(30);
+  const [verExplicaciones, setVerExplicaciones] = useState(false);
 
   const tema = useQuery({
     queryKey: ["tema-detalle", id],
@@ -296,9 +297,21 @@ function DetalleTema() {
       </div>
 
       <section className="mt-8 space-y-4">
-        <h2 className="font-pixel text-xs text-primary text-glow-amarillo">
-          QUIÉNES YA LO HICIERON
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-pixel text-xs text-primary text-glow-amarillo">
+            QUIÉNES YA LO HICIERON
+          </h2>
+          <Button
+            variant="contorno"
+            size="sm"
+            className="font-pixel text-[9px]"
+            aria-pressed={verExplicaciones}
+            onClick={() => setVerExplicaciones((v) => !v)}
+          >
+            {verExplicaciones ? "OCULTAR EXPLICACIONES" : "VER EXPLICACIONES"}
+          </Button>
+        </div>
+
 
         {publicaciones.isLoading ? (
           <div className="space-y-3">
@@ -337,11 +350,16 @@ function DetalleTema() {
                   </div>
                 </div>
 
-                {s.explanation_text && (
-                  <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
-                    {s.explanation_text}
-                  </p>
-                )}
+                {s.explanation_text &&
+                  (verExplicaciones ? (
+                    <p className="whitespace-pre-wrap text-sm leading-relaxed text-foreground/90">
+                      {s.explanation_text}
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground">
+                      Explicación oculta — apretá “ver explicaciones” para leerla.
+                    </p>
+                  ))}
 
                 <div className="flex flex-wrap items-center gap-2">
                   <span className="font-pixel inline-flex items-center gap-1.5 text-[10px] text-muted-foreground">

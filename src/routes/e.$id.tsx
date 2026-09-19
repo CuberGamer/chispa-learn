@@ -38,7 +38,9 @@ function ExplicacionPublica() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("study_sessions")
-        .select("id, user_id, duration_minutes, explanation_text, created_at, topics(title)")
+        .select(
+          "id, user_id, topic_id, duration_minutes, explanation_text, created_at, topics(title)",
+        )
         .eq("id", id)
         .eq("is_public", true)
         .maybeSingle();
@@ -113,7 +115,16 @@ function ExplicacionPublica() {
               </p>
             )}
 
-            <BotonCompartir id={sesion.data.id} titulo={sesion.data.titulo} />
+            <div className="flex flex-wrap items-center gap-2">
+              {sesion.data.topic_id && (
+                <Button asChild variant="chispa" className="font-pixel text-[10px]">
+                  <Link to="/tema/$id" params={{ id: sesion.data.topic_id }}>
+                    HACER ESTE TEMA
+                  </Link>
+                </Button>
+              )}
+              <BotonCompartir id={sesion.data.id} titulo={sesion.data.titulo} />
+            </div>
           </article>
 
           <div className="glass flex flex-col items-center gap-4 p-6 text-center">
