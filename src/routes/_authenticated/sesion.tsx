@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { BotonCompartir } from "@/components/boton-compartir";
+import { InvitarTema } from "@/components/invitar-tema";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import {
   PixelCheck,
