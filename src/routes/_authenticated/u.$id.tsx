@@ -228,48 +228,10 @@ function PerfilPublico() {
         ))}
       </ul>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
-        {/* Temas publicados */}
-        <section className="glass space-y-4 p-5">
-          <h2 className="font-pixel text-xs text-primary">TEMAS</h2>
-          {d.sesiones.length > 0 ? (
-            <ul className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {d.sesiones.map((s) => (
-                <li key={s.id} className="glass glass-hover flex flex-col gap-2 p-4">
-                  <span className="font-pixel self-start rounded-full border border-violeta/50 bg-accent/20 px-2.5 py-1 text-[8px]">
-                    {((s.topics as { title: string } | null)?.title ?? "Tema").toUpperCase()}
-                  </span>
-                  {s.explanation_text && (
-                    <p className="line-clamp-5 text-xs whitespace-pre-wrap text-foreground/90">
-                      {s.explanation_text}
-                    </p>
-                  )}
-                  <span className="font-pixel inline-flex items-center gap-1.5 text-[8px] text-muted-foreground">
-                    <PixelReloj size={11} />
-                    {s.duration_minutes} MIN
-                  </span>
-                  <div className="mt-auto flex flex-wrap gap-2">
-                    <Button asChild variant="ghost" size="sm" className="font-pixel text-[9px]">
-                      <Link to="/e/$id" params={{ id: s.id }}>
-                        VER
-                      </Link>
-                    </Button>
-                    <BotonCompartir
-                      id={s.id}
-                      titulo={(s.topics as { title: string } | null)?.title ?? "Tema"}
-                      variante="ghost"
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p className="p-6 text-center text-sm text-muted-foreground">
-              Todavía no compartió explicaciones.
-            </p>
-          )}
-        </section>
+      <PanelesPerfil userId={id} esMio={d.esMio} />
 
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div />
         {/* Logros */}
         <aside className="glass h-fit space-y-3 p-5 lg:sticky lg:top-32">
           <h2 className="font-pixel text-xs text-primary">LOGROS</h2>
