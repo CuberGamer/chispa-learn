@@ -618,21 +618,40 @@ function Explicacion({
         <div className="glass space-y-3 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <h2 className="font-pixel text-[10px] text-secondary">NOTAS DE TU INVESTIGACIÓN</h2>
-            <Button
-              variant="contorno"
-              size="sm"
-              className="font-pixel text-[10px]"
-              onClick={() =>
-                setTexto((t) => (t.trim() ? `${t.trim()}\n\n${notas.trim()}` : notas.trim()))
-              }
-            >
-              <NotebookPen />
-              USAR MIS NOTAS
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              <Button
+                variant="contorno"
+                size="sm"
+                className="font-pixel text-[10px]"
+                onClick={() => setVerNotas((v) => !v)}
+                aria-expanded={verNotas}
+              >
+                <NotebookPen />
+                {verNotas ? "OCULTAR MIS NOTAS" : "USAR MIS NOTAS"}
+              </Button>
+              {verNotas && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="font-pixel text-[10px]"
+                  onClick={() =>
+                    setTexto((t) => (t.trim() ? `${t.trim()}\n\n${notas.trim()}` : notas.trim()))
+                  }
+                >
+                  AGREGAR AL TEXTO
+                </Button>
+              )}
+            </div>
           </div>
-          <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-            {notas.trim()}
-          </p>
+          {verNotas ? (
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
+              {notas.trim()}
+            </p>
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Tus notas están guardadas. Apretá “usar mis notas” para verlas.
+            </p>
+          )}
         </div>
       )}
 
