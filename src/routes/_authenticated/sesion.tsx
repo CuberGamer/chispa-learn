@@ -582,6 +582,7 @@ function Explicacion({
                 {publicando ? "PUBLICANDO…" : "PUBLICAR Y COMPARTIR"}
               </Button>
             )}
+            <InvitarTema temaId={temaId} sessionId={guardada} />
             <Button
               variant="contorno"
               size="sm"
