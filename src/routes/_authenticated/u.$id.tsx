@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 import { AvatarUsuario } from "@/components/avatar-usuario";
-import { BotonCompartir } from "@/components/boton-compartir";
+import { PanelesPerfil } from "@/components/paneles-perfil";
 import { Chispa, BurbujaChispa, type ChispaSkin } from "@/components/chispa";
 import {
   PixelCalendario,
