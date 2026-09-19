@@ -1,13 +1,22 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { AvatarUsuario } from "@/components/avatar-usuario";
+import { PanelesPerfil } from "@/components/paneles-perfil";
 import { Chispa, SKINS, type ChispaSkin } from "@/components/chispa";
+import {
+  PixelCalendario,
+  PixelChispita,
+  PixelFuego,
+  PixelPersona,
+  PixelReloj,
+} from "@/components/pixel-icons";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +42,8 @@ export const Route = createFileRoute("/_authenticated/perfil")({
 function Perfil() {
   const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
+  const [bio, setBio] = useState("");
+  const [editando, setEditando] = useState(false);
   const [skin, setSkin] = useState<ChispaSkin>("clasico");
   const [guardando, setGuardando] = useState(false);
   const [subiendo, setSubiendo] = useState(false);
@@ -44,19 +55,48 @@ function Perfil() {
       const { data: userData } = await supabase.auth.getUser();
       const userId = userData.user?.id;
       if (!userId) throw new Error("Sesión expirada");
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("id, username, avatar_chispa_skin, avatar_url")
-        .eq("id", userId)
-        .maybeSingle();
+
+      const [{ data, error }, { data: racha }, { data: sesiones }, { data: follows }] =
+        await Promise.all([
+          supabase
+            .from("profiles")
+            .select("id, username, bio, avatar_chispa_skin, avatar_url, created_at")
+            .eq("id", userId)
+            .maybeSingle(),
+          supabase
+            .from("streaks")
+            .select("current_streak, longest_streak")
+            .eq("user_id", userId)
+            .maybeSingle(),
+          supabase
+            .from("study_sessions")
+            .select("id, duration_minutes, is_public")
+            .eq("user_id", userId),
+          supabase.from("user_follows").select("follower_id, following_id"),
+        ]);
       if (error) throw error;
-      return { ...data, id: data?.id ?? userId, email: userData.user?.email ?? "" };
+
+      const relaciones = follows ?? [];
+      const filas = sesiones ?? [];
+
+      return {
+        ...data,
+        id: data?.id ?? userId,
+        email: userData.user?.email ?? "",
+        rachaActual: racha?.current_streak ?? 0,
+        rachaMaxima: racha?.longest_streak ?? 0,
+        minutos: filas.reduce((a, s) => a + (s.duration_minutes ?? 0), 0),
+        publicas: filas.filter((s) => s.is_public).length,
+        seguidores: relaciones.filter((f) => f.following_id === userId).length,
+        siguiendoCantidad: relaciones.filter((f) => f.follower_id === userId).length,
+      };
     },
   });
 
   useEffect(() => {
     if (perfil.data) {
       setUsername(perfil.data.username ?? "");
+      setBio(perfil.data.bio ?? "");
       setSkin((perfil.data.avatar_chispa_skin as ChispaSkin) ?? "clasico");
     }
   }, [perfil.data]);
@@ -126,58 +166,113 @@ function Perfil() {
     setGuardando(true);
     const { error } = await supabase
       .from("profiles")
-      .update({ username: nombre, avatar_chispa_skin: skin })
+      .update({ username: nombre, bio: bio.trim() || null, avatar_chispa_skin: skin })
       .eq("id", perfil.data?.id as string);
     setGuardando(false);
     if (error) {
       toast.error("No pude guardar los cambios");
       return;
     }
+    setEditando(false);
     toast.success("¡Listo! Guardado");
     void queryClient.invalidateQueries({ queryKey: ["perfil"] });
+    void queryClient.invalidateQueries({ queryKey: ["mi-perfil"] });
     void queryClient.invalidateQueries({ queryKey: ["skin"] });
   }
 
-  return (
-    <main className="mx-auto w-full max-w-3xl space-y-8 px-5 pb-16">
-      <div className="glass flex items-center gap-4 p-5">
-        <Chispa estado="emocionado" size="sm" skin={skin} flotando={false} />
-        <div>
-          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">PERFIL</h1>
-          <p className="text-sm text-muted-foreground">
-            Ponete cómodo: foto, nombre y el look de Chispa.
-          </p>
-        </div>
-      </div>
+  if (perfil.isLoading || !perfil.data) {
+    return (
+      <main className="mx-auto w-full max-w-[1500px] space-y-4 px-4 pb-16 lg:px-8">
+        <Skeleton className="h-48 w-full" />
+        <Skeleton className="h-32 w-full" />
+      </main>
+    );
+  }
 
-      {perfil.isLoading ? (
-        <div className="space-y-4">
-          <Skeleton className="h-28" />
-          <Skeleton className="h-48" />
-        </div>
-      ) : (
-        <>
-          <section className="glass flex flex-wrap items-center gap-5 p-5">
-            <AvatarUsuario
-              path={perfil.data?.avatar_url ?? null}
-              skin={skin}
-              nombre={username}
-              size={88}
-              className="border-primary/40"
+  const d = perfil.data;
+
+  return (
+    <main className="mx-auto w-full max-w-[1500px] space-y-4 px-4 pb-16 lg:px-8">
+      {/* Cabecera: foto editable · nombre y descripción editables · racha */}
+      <div className="glass grid gap-5 p-5 lg:grid-cols-[220px_minmax(0,1fr)_180px] lg:items-center">
+        <div className="flex justify-center">
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => inputFoto.current?.click()}
+              disabled={subiendo}
+              aria-label="Cambiar tu foto de perfil"
+              className="rounded-full transition-transform active:scale-[0.98]"
+            >
+              <AvatarUsuario
+                path={d.avatar_url ?? null}
+                skin={skin}
+                nombre={username}
+                size={180}
+                className="max-w-full border-primary/40"
+              />
+            </button>
+            <button
+              type="button"
+              onClick={() => inputFoto.current?.click()}
+              disabled={subiendo}
+              aria-label="Cambiar tu foto de perfil"
+              className="font-pixel absolute -bottom-1 -right-1 rounded-full border-2 border-primary/60 bg-background/90 px-3 py-2 text-[9px] text-primary"
+            >
+              {subiendo ? "…" : "✎"}
+            </button>
+            <input
+              ref={inputFoto}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) void subirFoto(f);
+              }}
             />
-            <div className="space-y-2">
-              <p className="font-pixel text-[10px] text-muted-foreground">TU FOTO DE PERFIL</p>
+          </div>
+        </div>
+
+        <div className="glass space-y-3 p-5">
+          {editando ? (
+            <div className="space-y-3">
+              <Input
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                maxLength={32}
+                placeholder="Tu nombre"
+              />
+              <Textarea
+                value={bio}
+                onChange={(e) => setBio(e.target.value)}
+                maxLength={160}
+                rows={2}
+                placeholder="Descripción de tu cuenta"
+              />
               <div className="flex flex-wrap gap-2">
                 <Button
                   variant="chispa"
                   size="sm"
                   className="font-pixel text-[9px]"
-                  disabled={subiendo}
-                  onClick={() => inputFoto.current?.click()}
+                  disabled={guardando}
+                  onClick={guardar}
                 >
-                  {subiendo ? "SUBIENDO…" : "CAMBIAR FOTO"}
+                  {guardando ? "GUARDANDO…" : "GUARDAR"}
                 </Button>
-                {perfil.data?.avatar_url && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="font-pixel text-[9px]"
+                  onClick={() => {
+                    setUsername(d.username ?? "");
+                    setBio(d.bio ?? "");
+                    setEditando(false);
+                  }}
+                >
+                  CANCELAR
+                </Button>
+                {d.avatar_url && (
                   <Button
                     variant="ghost"
                     size="sm"
@@ -185,66 +280,96 @@ function Perfil() {
                     disabled={subiendo}
                     onClick={quitarFoto}
                   >
-                    QUITAR
+                    QUITAR FOTO
                   </Button>
                 )}
               </div>
-              <input
-                ref={inputFoto}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={(e) => {
-                  const f = e.target.files?.[0];
-                  if (f) void subirFoto(f);
-                }}
-              />
-              <p className="text-xs text-muted-foreground">
-                Si no subís foto, te muestro con tu Chispa.
+            </div>
+          ) : (
+            <>
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="font-pixel flex-1 truncate text-base text-primary text-glow-amarillo">
+                  {(d.username ?? "").toUpperCase()}
+                </h1>
+                <Button
+                  variant="contorno"
+                  size="sm"
+                  className="font-pixel text-[9px]"
+                  onClick={() => setEditando(true)}
+                >
+                  ✎ EDITAR
+                </Button>
+                <span className="font-pixel rounded-full border border-white/15 bg-white/5 px-3 py-2 text-[9px] text-muted-foreground">
+                  {d.seguidores} SEGUIDORES
+                </span>
+              </div>
+              <p className="border-b border-dashed border-white/15 pb-2 text-sm text-muted-foreground">
+                {d.bio?.trim() ? d.bio : "Agregá una descripción de tu cuenta con ✎ EDITAR."}
               </p>
-            </div>
-          </section>
+              <p className="text-sm text-muted-foreground">
+                {d.publicas} explicaciones públicas · {d.siguiendoCantidad} siguiendo
+              </p>
+              <p className="inline-flex items-center gap-1.5 text-xs text-muted-foreground">
+                <PixelCalendario size={12} />
+                {d.created_at
+                  ? `Desde ${new Date(d.created_at).toLocaleDateString("es-AR", {
+                      month: "long",
+                      year: "numeric",
+                    })}`
+                  : d.email}
+              </p>
+            </>
+          )}
+        </div>
 
-          <section className="glass space-y-4 p-5">
-            <div className="space-y-2">
-              <label htmlFor="username" className="font-pixel text-[10px] text-muted-foreground">
-                CÓMO TE LLAMO
-              </label>
-              <Input
-                id="username"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                maxLength={32}
-                placeholder="Tu nombre"
-              />
-            </div>
-            <p className="text-xs text-muted-foreground">
-              Tu email: <span className="text-foreground/80">{perfil.data?.email}</span>
+        <div className="flex flex-col items-center justify-center gap-1">
+          <PixelFuego size={64} className="text-primary" />
+          <p className="font-pixel text-lg text-primary text-glow-amarillo">{d.rachaActual}</p>
+          <p className="font-pixel text-[8px] text-muted-foreground">RACHA</p>
+        </div>
+      </div>
+
+      {/* Métricas rápidas */}
+      <ul className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        {[
+          { label: "RACHA MÁXIMA", valor: `${d.rachaMaxima} d`, icon: <PixelFuego size={14} /> },
+          { label: "MINUTOS", valor: `${d.minutos}`, icon: <PixelReloj size={14} /> },
+          { label: "PÚBLICAS", valor: `${d.publicas}`, icon: <PixelChispita size={14} /> },
+          { label: "SIGUIENDO", valor: `${d.siguiendoCantidad}`, icon: <PixelPersona size={14} /> },
+        ].map((m) => (
+          <li key={m.label} className="glass glass-hover p-4">
+            <p className="font-pixel inline-flex items-center gap-1.5 text-[8px] text-muted-foreground">
+              {m.icon}
+              {m.label}
             </p>
-          </section>
+            <p className="font-pixel mt-2 text-sm text-foreground">{m.valor}</p>
+          </li>
+        ))}
+      </ul>
 
-          <section className="space-y-4">
-            <h2 className="font-pixel text-xs text-primary text-glow-amarillo">LOOK DE CHISPA</h2>
-            <ul className="grid gap-3 sm:grid-cols-3">
-              {SKINS.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSkin(s.id)}
-                    aria-pressed={skin === s.id}
-                    className={cn(
-                      "glass glass-hover flex w-full flex-col items-center gap-3 p-5",
-                      skin === s.id ? "border-primary/60" : "opacity-70 hover:opacity-100",
-                    )}
-                  >
-                    <Chispa estado="neutral" size="sm" skin={s.id} flotando={false} />
-                    <span className="font-pixel text-[9px]">{s.nombre.toUpperCase()}</span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </section>
+      <PanelesPerfil userId={d.id} esMio />
 
+      <section className="space-y-4">
+        <h2 className="font-pixel text-xs text-primary text-glow-amarillo">LOOK DE CHISPA</h2>
+        <ul className="grid gap-3 sm:grid-cols-3">
+          {SKINS.map((s) => (
+            <li key={s.id}>
+              <button
+                type="button"
+                onClick={() => setSkin(s.id)}
+                aria-pressed={skin === s.id}
+                className={cn(
+                  "glass glass-hover flex w-full flex-col items-center gap-3 p-5",
+                  skin === s.id ? "border-primary/60" : "opacity-70 hover:opacity-100",
+                )}
+              >
+                <Chispa estado="neutral" size="sm" skin={s.id} flotando={false} />
+                <span className="font-pixel text-[9px]">{s.nombre.toUpperCase()}</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+        <div className="flex flex-wrap items-center gap-3">
           <Button
             variant="chispa"
             onClick={guardar}
@@ -253,8 +378,11 @@ function Perfil() {
           >
             {guardando ? "GUARDANDO…" : "GUARDAR CAMBIOS"}
           </Button>
-        </>
-      )}
+          <Button asChild variant="ghost" className="font-pixel text-[10px]">
+            <Link to="/comunidad">IR A LA COMUNIDAD</Link>
+          </Button>
+        </div>
+      </section>
     </main>
   );
 }

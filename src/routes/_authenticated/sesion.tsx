@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 
 import { BotonCompartir } from "@/components/boton-compartir";
+import { InvitarTema } from "@/components/invitar-tema";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import {
   PixelCheck,
@@ -582,6 +583,7 @@ function Explicacion({
                 {publicando ? "PUBLICANDO…" : "PUBLICAR Y COMPARTIR"}
               </Button>
             )}
+            <InvitarTema temaId={temaId} sessionId={guardada} />
             <Button
               variant="contorno"
               size="sm"

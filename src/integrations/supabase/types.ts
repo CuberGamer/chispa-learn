@@ -77,6 +77,7 @@ export type Database = {
         Row: {
           avatar_chispa_skin: string
           avatar_url: string | null
+          bio: string | null
           created_at: string
           id: string
           username: string
@@ -84,6 +85,7 @@ export type Database = {
         Insert: {
           avatar_chispa_skin?: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           id: string
           username: string
@@ -91,6 +93,7 @@ export type Database = {
         Update: {
           avatar_chispa_skin?: string
           avatar_url?: string | null
+          bio?: string | null
           created_at?: string
           id?: string
           username?: string
@@ -263,6 +266,48 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      topic_invites: {
+        Row: {
+          created_at: string
+          id: string
+          receiver_id: string
+          sender_id: string
+          session_id: string | null
+          topic_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          receiver_id: string
+          sender_id: string
+          session_id?: string | null
+          topic_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          receiver_id?: string
+          sender_id?: string
+          session_id?: string | null
+          topic_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_invites_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "study_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_invites_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       topic_tags: {
         Row: {
