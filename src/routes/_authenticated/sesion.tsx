@@ -436,6 +436,7 @@ function Explicacion({
   const [publico, setPublico] = useState(false);
   const [guardada, setGuardada] = useState<string | null>(null);
   const [publicando, setPublicando] = useState(false);
+  const [verNotas, setVerNotas] = useState(false);
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
