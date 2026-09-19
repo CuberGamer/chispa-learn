@@ -38,7 +38,9 @@ function ExplicacionPublica() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("study_sessions")
-        .select("id, user_id, duration_minutes, explanation_text, created_at, topics(title)")
+        .select(
+          "id, user_id, topic_id, duration_minutes, explanation_text, created_at, topics(title)",
+        )
         .eq("id", id)
         .eq("is_public", true)
         .maybeSingle();
