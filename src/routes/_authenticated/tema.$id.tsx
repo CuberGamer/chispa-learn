@@ -161,6 +161,7 @@ function DetalleTema() {
   const navigate = useNavigate();
   const sesion = useSesionActiva();
   const [minutos, setMinutos] = useState(30);
+  const [verExplicaciones, setVerExplicaciones] = useState(false);
 
   const tema = useQuery({
     queryKey: ["tema-detalle", id],
