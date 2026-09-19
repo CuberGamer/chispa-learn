@@ -296,9 +296,21 @@ function DetalleTema() {
       </div>
 
       <section className="mt-8 space-y-4">
-        <h2 className="font-pixel text-xs text-primary text-glow-amarillo">
-          QUIÉNES YA LO HICIERON
-        </h2>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="font-pixel text-xs text-primary text-glow-amarillo">
+            QUIÉNES YA LO HICIERON
+          </h2>
+          <Button
+            variant="contorno"
+            size="sm"
+            className="font-pixel text-[9px]"
+            aria-pressed={verExplicaciones}
+            onClick={() => setVerExplicaciones((v) => !v)}
+          >
+            {verExplicaciones ? "OCULTAR EXPLICACIONES" : "VER EXPLICACIONES"}
+          </Button>
+        </div>
+
 
         {publicaciones.isLoading ? (
           <div className="space-y-3">
