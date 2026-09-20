@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AvatarUsuario } from "@/components/avatar-usuario";
 import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, type ChispaSkin } from "@/components/chispa";
+import { InvitacionesRecibidas } from "@/components/invitaciones-recibidas";
 import {
   PixelAplauso,
   PixelChat,
@@ -312,6 +313,8 @@ function Inicio() {
             </>
           )}
         </section>
+
+        <InvitacionesRecibidas />
 
         <div className="grid grid-cols-2 gap-4">
           <button

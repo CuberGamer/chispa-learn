@@ -64,7 +64,7 @@ export function InvitacionesRecibidas() {
               <AvatarUsuario
                 path={i.autor?.avatar_url ?? null}
                 skin={(i.autor?.avatar_chispa_skin as ChispaSkin) ?? "clasico"}
-                nombre={i.autor?.username}
+                nombre={i.autor?.username ?? "Alguien"}
                 size={28}
               />
               <span className="flex-1 truncate text-xs text-muted-foreground">
