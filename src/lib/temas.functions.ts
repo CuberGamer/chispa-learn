@@ -10,6 +10,13 @@ const esquemaTemaIA = z.object({
   tags: z.array(z.string().min(1).max(30)).min(1).max(5),
 });
 
+const esquemaTemaManual = z.object({
+  title: z.string().trim().min(3).max(120),
+  description: z.string().trim().min(10).max(800),
+  duration_suggested: z.number().int().min(5).max(120),
+  tags: z.array(z.string().trim().min(1).max(30)).min(1).max(5),
+});
+
 const ENDPOINT = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const MODELO = "google/gemini-3.7-flash";
 
@@ -162,4 +169,49 @@ export const generarTemaIA = createServerFn({ method: "POST" })
       description: topicRow.description,
       duration_suggested: topicRow.duration_suggested,
     };
+  });
+
+export const crearTemaManual = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((data) => esquemaTemaManual.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const { data: topicRow, error: topicError } = await supabaseAdmin
+      .from("topics")
+      .insert({
+        title: data.title,
+        description: data.description,
+        duration_suggested: data.duration_suggested,
+        source: "usuario",
+      })
+      .select("id")
+      .single();
+
+    if (topicError || !topicRow) {
+      throw new Error(topicError?.message ?? "No se pudo guardar el tema");
+    }
+
+    for (const tagName of data.tags) {
+      const normalized = tagName.toLowerCase().replace(/\s+/g, "-");
+      const { data: existente } = await supabaseAdmin
+        .from("tags")
+        .select("id")
+        .eq("name", normalized)
+        .maybeSingle();
+
+      let tagId = existente?.id;
+      if (!tagId) {
+        const { data: nueva } = await supabaseAdmin
+          .from("tags")
+          .insert({ name: normalized })
+          .select("id")
+          .single();
+        tagId = nueva?.id;
+      }
+      if (tagId) {
+        await supabaseAdmin.from("topic_tags").insert({ topic_id: topicRow.id, tag_id: tagId });
+      }
+    }
+
+    return { id: topicRow.id };
   });
