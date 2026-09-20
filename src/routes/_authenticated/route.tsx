@@ -1,12 +1,10 @@
-import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, Outlet, redirect, Link } from "@tanstack/react-router";
 
 import { supabase } from "@/integrations/supabase/client";
 import { AvatarUsuario } from "@/components/avatar-usuario";
 import { DynamicIsland } from "@/components/dynamic-island";
 import { MusicaProvider } from "@/lib/musica";
 import { SesionActivaProvider } from "@/lib/sesion-activa";
-import { Button } from "@/components/ui/button";
 import {
   PixelCartas,
   PixelChispita,
@@ -42,16 +40,7 @@ const PRONTO = [
 ] as const;
 
 function LayoutApp() {
-  const navigate = useNavigate();
-  const queryClient = useQueryClient();
   const perfil = useMiPerfil();
-
-  async function salir() {
-    await queryClient.cancelQueries();
-    queryClient.clear();
-    await supabase.auth.signOut();
-    navigate({ to: "/auth", replace: true });
-  }
 
   return (
     <MusicaProvider>
@@ -89,14 +78,6 @@ function LayoutApp() {
                       size={38}
                     />
                   </Link>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={salir}
-                    className="font-pixel text-[9px] text-muted-foreground"
-                  >
-                    SALIR
-                  </Button>
                 </div>
               </div>
 

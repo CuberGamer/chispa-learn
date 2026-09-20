@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -40,6 +40,7 @@ export const Route = createFileRoute("/_authenticated/perfil")({
 });
 
 function Perfil() {
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [username, setUsername] = useState("");
   const [bio, setBio] = useState("");
@@ -178,6 +179,13 @@ function Perfil() {
     void queryClient.invalidateQueries({ queryKey: ["perfil"] });
     void queryClient.invalidateQueries({ queryKey: ["mi-perfil"] });
     void queryClient.invalidateQueries({ queryKey: ["skin"] });
+  }
+
+  async function salir() {
+    await queryClient.cancelQueries();
+    queryClient.clear();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth", replace: true });
   }
 
   if (perfil.isLoading || !perfil.data) {
@@ -380,6 +388,24 @@ function Perfil() {
           </Button>
           <Button asChild variant="ghost" className="font-pixel text-[10px]">
             <Link to="/comunidad">IR A LA COMUNIDAD</Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="border-t border-border pt-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h2 className="font-pixel text-xs text-foreground">CONFIGURACIÓN DE PERFIL</h2>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Cerrá tu sesión en este dispositivo.
+            </p>
+          </div>
+          <Button
+            variant="destructive"
+            onClick={salir}
+            className="font-pixel w-full text-[9px] sm:w-auto"
+          >
+            CERRAR SESIÓN
           </Button>
         </div>
       </section>
