@@ -27,6 +27,24 @@ export const Route = createFileRoute("/_authenticated/crear-tema")({
 });
 
 const DURACIONES = [5, 15, 30, 45, 60];
+const ETIQUETAS_BASE = [
+  "arte",
+  "biología",
+  "ciencia",
+  "economía",
+  "filosofía",
+  "física",
+  "geografía",
+  "historia",
+  "literatura",
+  "matemática",
+  "música",
+  "naturaleza",
+  "psicología",
+  "salud",
+  "sociedad",
+  "tecnología",
+];
 const FUENTES_INICIALES = [
   { nombre: "Google Scholar", url: "https://scholar.google.com" },
   { nombre: "Wikipedia", url: "https://es.wikipedia.org" },
@@ -49,7 +67,8 @@ function CrearTema() {
     queryFn: async () => {
       const { data, error } = await supabase.from("tags").select("name").order("name");
       if (error) throw error;
-      return (data ?? []).map((tag) => tag.name);
+      const disponibles = (data ?? []).map((tag) => tag.name);
+      return disponibles.length > 0 ? disponibles : ETIQUETAS_BASE;
     },
   });
 
@@ -69,6 +88,12 @@ function CrearTema() {
         },
       }),
     onSuccess: async ({ id }) => {
+      const fuentesDelTema = fuentes.map((fuente, indice) => ({
+        id: `creada-${indice}-${Date.now()}`,
+        titulo: fuente.nombre,
+        url: fuente.url,
+      }));
+      localStorage.setItem(`chispa-fuentes-${id}`, JSON.stringify(fuentesDelTema));
       await queryClient.invalidateQueries({ queryKey: ["tema-del-dia"] });
       toast.success("¡Tema creado!");
       navigate({ to: "/tema/$id", params: { id } });
