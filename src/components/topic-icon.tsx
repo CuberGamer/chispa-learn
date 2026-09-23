@@ -63,7 +63,7 @@ export const TOPIC_ICONS: ReadonlyArray<{
   { id: "chispa", label: "Chispa", category: "Cultura", Icon: Sparkles },
 ] as const;
 
-export function TopicIcon({ icon, className, size = 32 }: { icon?: string | null; className?: string; size?: number }) {
+export function TopicIcon({ icon, className, size = 32 }: { icon?: string | null | undefined; className?: string | undefined; size?: number | undefined }) {
   const item = TOPIC_ICONS.find((candidate) => candidate.id === icon);
   const Icon = item?.Icon ?? BookOpen;
   return <Icon aria-hidden className={cn("text-primary", className)} size={size} strokeWidth={2.4} />;
