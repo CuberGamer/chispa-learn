@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import { PixelFiltro, PixelLupa, PixelReloj } from "@/components/pixel-icons";
+import { TopicIcon } from "@/components/topic-icon";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -16,6 +17,7 @@ type TopicConTags = {
   title: string;
   description: string | null;
   duration_suggested: number;
+  icon: string;
   topic_tags: Array<{ tags: { name: string } | null }>;
 };
 
@@ -50,7 +52,7 @@ function Biblioteca() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("topics")
-        .select("id, title, description, duration_suggested, topic_tags(tags(name))")
+        .select("id, title, description, duration_suggested, icon, topic_tags(tags(name))")
         .order("title", { ascending: true });
       if (error) throw error;
       return (data ?? []) as TopicConTags[];
@@ -159,8 +161,8 @@ function Biblioteca() {
                         VER TEMA
                       </Button>
                     </div>
-                    <div className="hidden w-28 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 xl:flex">
-                      <Chispa skin={skin} estado="concentrado" size="sm" flotando={false} />
+                    <div className="hidden w-28 shrink-0 items-center justify-center rounded-2xl border border-primary/20 bg-primary/5 xl:flex">
+                      <TopicIcon icon={t.icon} size={50} />
                     </div>
                   </li>
                 );
