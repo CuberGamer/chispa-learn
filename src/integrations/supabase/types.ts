@@ -344,6 +344,7 @@ export type Database = {
           created_at: string
           description: string | null
           duration_suggested: number
+          icon: string
           id: string
           source: string
           title: string
@@ -352,6 +353,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_suggested?: number
+          icon?: string
           id?: string
           source?: string
           title: string
@@ -360,6 +362,7 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration_suggested?: number
+          icon?: string
           id?: string
           source?: string
           title?: string

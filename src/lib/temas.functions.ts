@@ -14,6 +14,7 @@ const esquemaTemaManual = z.object({
   title: z.string().trim().min(3).max(120),
   description: z.string().trim().min(10).max(800),
   duration_suggested: z.number().int().min(5).max(120),
+  icon: z.string().trim().min(1).max(40),
   tags: z.array(z.string().trim().min(1).max(30)).min(1).max(5),
 });
 
@@ -182,6 +183,7 @@ export const crearTemaManual = createServerFn({ method: "POST" })
         title: data.title,
         description: data.description,
         duration_suggested: data.duration_suggested,
+        icon: data.icon,
         source: "usuario",
       })
       .select("id")

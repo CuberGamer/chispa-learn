@@ -4,7 +4,9 @@ import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import { PixelDado, PixelLupa, PixelMas, PixelReloj } from "@/components/pixel-icons";
+import { TOPIC_ICONS, TopicIcon } from "@/components/topic-icon";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +59,9 @@ function CrearTema() {
   const [titulo, setTitulo] = useState("");
   const [descripcion, setDescripcion] = useState("");
   const [duracion, setDuracion] = useState(15);
+  const [icono, setIcono] = useState("libro");
+  const [selectorIcono, setSelectorIcono] = useState(false);
+  const [busquedaIcono, setBusquedaIcono] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [tagsElegidas, setTagsElegidas] = useState<string[]>([]);
   const [fuentes, setFuentes] = useState(FUENTES_INICIALES);
@@ -84,6 +89,7 @@ function CrearTema() {
           title: titulo,
           description: descripcion,
           duration_suggested: duracion,
+          icon: icono,
           tags: tagsElegidas,
         },
       }),
@@ -124,6 +130,10 @@ function CrearTema() {
   }
 
   const valido = titulo.trim().length >= 3 && descripcion.trim().length >= 10 && tagsElegidas.length > 0;
+  const iconosVisibles = TOPIC_ICONS.filter((item) => {
+    const q = busquedaIcono.trim().toLocaleLowerCase("es");
+    return !q || `${item.label} ${item.category}`.toLocaleLowerCase("es").includes(q);
+  });
 
   return (
     <main className="mx-auto w-full max-w-[1500px] px-4 pb-16 lg:px-8">
@@ -220,7 +230,16 @@ function CrearTema() {
                 {DURACIONES.map((minutos) => <option key={minutos} value={minutos}>{minutos} min</option>)}
               </select>
             </label>
-            <div className="glass flex min-w-20 items-center justify-center text-2xl" aria-label="Ícono del tema">📚</div>
+            <Button
+              type="button"
+              variant="secondary"
+              className="glass group h-auto min-h-16 min-w-20 flex-col gap-1 border border-primary/30 px-3"
+              aria-label="Elegir ícono del tema"
+              onClick={() => setSelectorIcono(true)}
+            >
+              <TopicIcon icon={icono} size={27} className="transition-transform group-hover:scale-110" />
+              <span className="font-pixel text-[6px] text-muted-foreground">CAMBIAR</span>
+            </Button>
           </div>
 
           <Textarea
@@ -263,6 +282,44 @@ function CrearTema() {
           <p className="text-xs text-muted-foreground">Elegí entre 1 y 5 etiquetas · {tagsElegidas.length}/5</p>
         </section>
       </form>
+
+      <Dialog open={selectorIcono} onOpenChange={setSelectorIcono}>
+        <DialogContent className="glass max-h-[85vh] w-[calc(100%-2rem)] max-w-2xl overflow-hidden border-primary/30 p-4 sm:p-6">
+          <DialogHeader>
+            <DialogTitle className="font-pixel text-xs text-primary">ELEGÍ UN ÍCONO</DialogTitle>
+            <DialogDescription>Será la imagen que identifica tu tema.</DialogDescription>
+          </DialogHeader>
+          <Input
+            value={busquedaIcono}
+            onChange={(event) => setBusquedaIcono(event.target.value)}
+            placeholder="Buscar ciencia, arte, música…"
+            aria-label="Buscar íconos"
+          />
+          <div className="grid max-h-[58vh] grid-cols-4 gap-2 overflow-y-auto pr-1 sm:grid-cols-6 md:grid-cols-8">
+            {iconosVisibles.map((item) => (
+              <Button
+                key={item.id}
+                type="button"
+                variant={icono === item.id ? "chispa" : "secondary"}
+                className="h-20 min-w-0 flex-col gap-2 px-1"
+                aria-label={`Usar ícono ${item.label}`}
+                aria-pressed={icono === item.id}
+                title={`${item.label} · ${item.category}`}
+                onClick={() => {
+                  setIcono(item.id);
+                  setSelectorIcono(false);
+                }}
+              >
+                <TopicIcon icon={item.id} size={25} className={icono === item.id ? "text-primary-foreground" : undefined} />
+                <span className="font-pixel w-full truncate text-[6px]">{item.label.toUpperCase()}</span>
+              </Button>
+            ))}
+          </div>
+          {iconosVisibles.length === 0 && (
+            <p className="py-8 text-center text-sm text-muted-foreground">No hay íconos con ese nombre.</p>
+          )}
+        </DialogContent>
+      </Dialog>
     </main>
   );
 }
