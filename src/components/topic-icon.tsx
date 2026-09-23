@@ -64,7 +64,7 @@ export const TOPIC_ICONS: ReadonlyArray<{
 ] as const;
 
 export function TopicIcon({ icon, className, size = 32 }: { icon?: string | null; className?: string; size?: number }) {
-  const item = TOPIC_ICONS.find((candidate) => candidate.id === icon) ?? TOPIC_ICONS[0];
-  const Icon = item.Icon;
+  const item = TOPIC_ICONS.find((candidate) => candidate.id === icon);
+  const Icon = item?.Icon ?? BookOpen;
   return <Icon aria-hidden className={cn("text-primary", className)} size={size} strokeWidth={2.4} />;
 }

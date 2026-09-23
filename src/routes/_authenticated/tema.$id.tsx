@@ -14,6 +14,7 @@ import {
   PixelFlechaArriba,
   PixelReloj,
 } from "@/components/pixel-icons";
+import { TopicIcon } from "@/components/topic-icon";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSkin } from "@/hooks/use-skin";
@@ -168,7 +169,7 @@ function DetalleTema() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("topics")
-        .select("id, title, description, duration_suggested, topic_tags(tags(name))")
+        .select("id, title, description, duration_suggested, icon, topic_tags(tags(name))")
         .eq("id", id)
         .maybeSingle();
       if (error) throw error;
@@ -248,8 +249,8 @@ function DetalleTema() {
             <Skeleton className="mx-auto h-64 w-full" />
           ) : tema.data ? (
             <>
-              <div className="mx-auto flex size-48 items-center justify-center rounded-3xl border border-white/10 bg-white/5">
-                <Chispa skin={skin} estado="concentrado" size="md" flotando={false} />
+              <div className="mx-auto flex size-48 items-center justify-center rounded-3xl border border-primary/25 bg-primary/5 shadow-[inset_0_0_28px_hsl(var(--primary)/0.08)]">
+                <TopicIcon icon={tema.data.icon} size={88} />
               </div>
 
               <div className="flex flex-wrap items-center justify-center gap-2">
