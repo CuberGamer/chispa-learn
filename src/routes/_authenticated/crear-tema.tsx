@@ -3,11 +3,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { PixelDado, PixelLupa, PixelMas, PixelReloj } from "@/components/pixel-icons";
+import { PixelCheck, PixelDado, PixelFlechaAbajo, PixelLupa, PixelReloj } from "@/components/pixel-icons";
 import { TOPIC_ICONS, TopicIcon } from "@/components/topic-icon";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { crearTemaManual } from "@/lib/temas.functions";
@@ -29,6 +30,8 @@ export const Route = createFileRoute("/_authenticated/crear-tema")({
 });
 
 const DURACIONES = [5, 15, 30, 45, 60];
+type Fuente = { nombre: string; url: string };
+
 const ETIQUETAS_BASE = [
   "arte",
   "biología",
@@ -47,11 +50,64 @@ const ETIQUETAS_BASE = [
   "sociedad",
   "tecnología",
 ];
-const FUENTES_INICIALES = [
+const FUENTES_RECOMENDADAS: Fuente[] = [
   { nombre: "Google Scholar", url: "https://scholar.google.com" },
-  { nombre: "Wikipedia", url: "https://es.wikipedia.org" },
-  { nombre: "Biblioteca Digital Mundial", url: "https://www.loc.gov/collections/world-digital-library/about-this-collection/" },
 ];
+
+function SelectorDuracion({
+  duracion,
+  onCambiar,
+}: {
+  duracion: number;
+  onCambiar: (duracion: number) => void;
+}) {
+  const [abierto, setAbierto] = useState(false);
+
+  return (
+    <Popover open={abierto} onOpenChange={setAbierto}>
+      <PopoverTrigger asChild>
+        <Button
+          type="button"
+          variant="secondary"
+          className="glass h-auto min-h-16 justify-between border border-primary/30 px-4 py-3 text-left"
+          aria-label="Elegir tiempo sugerido"
+        >
+          <span className="flex items-center gap-3">
+            <PixelReloj size={16} className="text-primary" />
+            <span>
+              <span className="font-pixel block text-[8px] text-muted-foreground">TIEMPO SUGERIDO</span>
+              <span className="mt-1 block text-sm text-foreground">{duracion} min</span>
+            </span>
+          </span>
+          <PixelFlechaAbajo size={13} className="text-primary" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="glass w-64 border-primary/30 p-3">
+        <div className="grid gap-2">
+          {DURACIONES.map((minutos) => {
+            const elegido = minutos === duracion;
+            return (
+              <Button
+                key={minutos}
+                type="button"
+                variant={elegido ? "chispa" : "secondary"}
+                className={cn("font-pixel justify-between text-[9px]", elegido && "glow-amarillo")}
+                aria-pressed={elegido}
+                onClick={() => {
+                  onCambiar(minutos);
+                  setAbierto(false);
+                }}
+              >
+                <span>{minutos} MIN</span>
+                {elegido && <PixelCheck size={13} />}
+              </Button>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
 
 function CrearTema() {
   const navigate = useNavigate();
@@ -64,7 +120,7 @@ function CrearTema() {
   const [busquedaIcono, setBusquedaIcono] = useState("");
   const [busqueda, setBusqueda] = useState("");
   const [tagsElegidas, setTagsElegidas] = useState<string[]>([]);
-  const [fuentes, setFuentes] = useState(FUENTES_INICIALES);
+  const [fuentes, setFuentes] = useState<Fuente[]>([]);
   const [nuevaFuente, setNuevaFuente] = useState("");
 
   const tags = useQuery({
@@ -118,15 +174,36 @@ function CrearTema() {
     );
   }
 
-  function agregarFuente() {
+  function agregarFuente(fuenteElegida?: Fuente) {
     const entrada = nuevaFuente.trim();
-    if (!entrada) return;
-    const esUrl = /^https?:\/\//i.test(entrada);
-    setFuentes((actuales) => [
-      ...actuales,
-      { nombre: esUrl ? new URL(entrada).hostname.replace("www.", "") : entrada, url: esUrl ? entrada : `https://scholar.google.com/scholar?q=${encodeURIComponent(entrada)}` },
-    ]);
-    setNuevaFuente("");
+    if (!fuenteElegida && !entrada) return;
+
+    let fuente: Fuente;
+    if (fuenteElegida) {
+      fuente = fuenteElegida;
+    } else {
+      const esUrl = /^https?:\/\//i.test(entrada);
+      if (esUrl) {
+        try {
+          const url = new URL(entrada);
+          fuente = { nombre: url.hostname.replace("www.", ""), url: url.href };
+        } catch {
+          toast.error("Revisá la URL de la fuente");
+          return;
+        }
+      } else {
+        fuente = {
+          nombre: entrada,
+          url: `https://scholar.google.com/scholar?q=${encodeURIComponent(entrada)}`,
+        };
+      }
+    }
+
+    setFuentes((actuales) => {
+      const yaExiste = actuales.some((actual) => actual.url.toLowerCase() === fuente.url.toLowerCase());
+      return yaExiste ? actuales : [...actuales, fuente];
+    });
+    if (!fuenteElegida) setNuevaFuente("");
   }
 
   const valido = titulo.trim().length >= 3 && descripcion.trim().length >= 10 && tagsElegidas.length > 0;
@@ -157,9 +234,8 @@ function CrearTema() {
         <section className="glass space-y-3 p-4 lg:min-h-[520px]">
           <div className="flex items-center justify-between border-b border-border pb-3">
             <h2 className="font-pixel text-[9px]">FUENTES RECOMENDADAS</h2>
-            <PixelMas size={15} className="text-primary" />
           </div>
-          <div className="flex gap-2">
+          <div className="grid gap-2">
             <Input
               value={nuevaFuente}
               onChange={(event) => setNuevaFuente(event.target.value)}
@@ -172,24 +248,60 @@ function CrearTema() {
                 }
               }}
             />
-            <Button type="button" size="icon" variant="contorno" aria-label="Agregar fuente" onClick={agregarFuente}>
-              <PixelMas />
+            <Button
+              type="button"
+              variant="contorno"
+              className="font-pixel w-full text-[8px]"
+              onClick={() => agregarFuente()}
+              disabled={!nuevaFuente.trim()}
+            >
+              AGREGAR FUENTE
             </Button>
           </div>
+
+          <div className="space-y-2">
+            <p className="text-xs text-muted-foreground">No se agrega ninguna fuente hasta que la elijas.</p>
+            {FUENTES_RECOMENDADAS.map((fuente) => {
+              const agregada = fuentes.some((actual) => actual.url === fuente.url);
+              return (
+                <div key={fuente.url} className="glass flex items-center justify-between gap-3 p-3">
+                  <div className="min-w-0">
+                    <p className="font-pixel text-[8px] text-primary">{fuente.nombre.toUpperCase()}</p>
+                    <p className="mt-1 truncate text-xs text-muted-foreground">{fuente.url}</p>
+                  </div>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={agregada ? "chispa" : "secondary"}
+                    className="font-pixel shrink-0 text-[7px]"
+                    onClick={() => agregarFuente(fuente)}
+                    disabled={agregada}
+                  >
+                    {agregada ? "AÑADIDA" : "AÑADIR"}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+
           <ul className="space-y-3">
-            {fuentes.map((fuente) => (
-              <li key={`${fuente.nombre}-${fuente.url}`}>
-                <a
-                  href={fuente.url}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="glass glass-hover block min-h-24 p-4"
-                >
-                  <span className="font-pixel text-[9px] text-primary">{fuente.nombre.toUpperCase()}</span>
-                  <span className="mt-2 block truncate text-xs text-muted-foreground">{fuente.url}</span>
-                </a>
-              </li>
-            ))}
+            {fuentes.length === 0 ? (
+              <li className="glass p-4 text-sm text-muted-foreground">Todavía no agregaste fuentes.</li>
+            ) : (
+              fuentes.map((fuente) => (
+                <li key={`${fuente.nombre}-${fuente.url}`}>
+                  <a
+                    href={fuente.url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="glass glass-hover block min-h-24 p-4"
+                  >
+                    <span className="font-pixel text-[9px] text-primary">{fuente.nombre.toUpperCase()}</span>
+                    <span className="mt-2 block truncate text-xs text-muted-foreground">{fuente.url}</span>
+                  </a>
+                </li>
+              ))
+            )}
           </ul>
         </section>
 
@@ -219,17 +331,7 @@ function CrearTema() {
           </div>
 
           <div className="grid grid-cols-[1fr_auto] gap-3">
-            <label className="glass flex items-center gap-3 px-4 py-3">
-              <PixelReloj size={16} className="text-primary" />
-              <span className="font-pixel text-[8px] text-muted-foreground">TIEMPO SUGERIDO</span>
-              <select
-                value={duracion}
-                onChange={(event) => setDuracion(Number(event.target.value))}
-                className="ml-auto bg-transparent text-sm text-foreground outline-none"
-              >
-                {DURACIONES.map((minutos) => <option key={minutos} value={minutos}>{minutos} min</option>)}
-              </select>
-            </label>
+            <SelectorDuracion duracion={duracion} onCambiar={setDuracion} />
             <Button
               type="button"
               variant="secondary"
