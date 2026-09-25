@@ -183,9 +183,11 @@ function CrearTema() {
       fuente = fuenteElegida;
     } else {
       const esUrl = /^https?:\/\//i.test(entrada);
-      if (esUrl) {
+      // Dominio simple (ej: scholar.google.com, es.wikipedia.org, arxiv.org)
+      const esDominio = /^([a-z0-9-]+\.)+[a-z]{2,}(\/.*)?$/i.test(entrada);
+      if (esUrl || esDominio) {
         try {
-          const url = new URL(entrada);
+          const url = new URL(esUrl ? entrada : `https://${entrada}`);
           fuente = { nombre: url.hostname.replace("www.", ""), url: url.href };
         } catch {
           toast.error("Revisá la URL de la fuente");
