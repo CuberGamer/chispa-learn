@@ -291,16 +291,26 @@ function CrearTema() {
               <li className="glass p-4 text-sm text-muted-foreground">Todavía no agregaste fuentes.</li>
             ) : (
               fuentes.map((fuente) => (
-                <li key={`${fuente.nombre}-${fuente.url}`}>
+                <li key={`${fuente.nombre}-${fuente.url}`} className="glass flex items-center justify-between gap-3 p-4">
                   <a
                     href={fuente.url}
                     target="_blank"
                     rel="noreferrer"
-                    className="glass glass-hover block min-h-24 p-4"
+                    className="glass-hover min-w-0 flex-1"
                   >
-                    <span className="font-pixel text-[9px] text-primary">{fuente.nombre.toUpperCase()}</span>
+                    <span className="font-pixel block text-[9px] text-primary">{fuente.nombre.toUpperCase()}</span>
                     <span className="mt-2 block truncate text-xs text-muted-foreground">{fuente.url}</span>
                   </a>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant="secondary"
+                    className="font-pixel shrink-0 text-[7px]"
+                    aria-label={`Eliminar fuente ${fuente.nombre}`}
+                    onClick={() => setFuentes((actuales) => actuales.filter((actual) => actual.url !== fuente.url))}
+                  >
+                    QUITAR
+                  </Button>
                 </li>
               ))
             )}
