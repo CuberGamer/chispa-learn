@@ -555,3 +555,125 @@ function Explicacion({
       </main>
     );
   }
+
+  const [nuevaFuente, setNuevaFuente] = useState("");
+
+  function agregarFuente() {
+    const v = nuevaFuente.trim();
+    if (!v) return;
+    const url = normalizarUrlFuente(v);
+    if (fuentes.some((f) => f.url.toLowerCase() === url.toLowerCase())) {
+      toast.error("Esa fuente ya está");
+      return;
+    }
+    setFuentes((l) => [...l, { id: crypto.randomUUID(), titulo: v, url }]);
+    setNuevaFuente("");
+  }
+
+  return (
+    <main className="mx-auto w-full max-w-[1500px] px-4 pb-16 lg:px-8">
+      <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)_360px]">
+        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
+          <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">FUENTES USADAS</h2>
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              agregarFuente();
+            }}
+          >
+            <input
+              value={nuevaFuente}
+              onChange={(e) => setNuevaFuente(e.target.value)}
+              placeholder="URL o dominio"
+              className="glass min-w-0 flex-1 bg-transparent px-3 py-2 text-xs outline-none placeholder:text-muted-foreground"
+            />
+            <Button type="submit" variant="contorno" size="sm" className="font-pixel text-[8px]">
+              AGREGAR
+            </Button>
+          </form>
+          <ul className="max-h-[28rem] space-y-2 overflow-y-auto pr-1">
+            {fuentes.map((f) => (
+              <li key={f.id} className="glass flex items-center gap-2 p-3">
+                <a href={f.url} target="_blank" rel="noreferrer noopener" className="min-w-0 flex-1">
+                  <span className="block truncate text-sm">{f.titulo}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">{f.url}</span>
+                </a>
+                <button
+                  type="button"
+                  aria-label={`Quitar ${f.titulo}`}
+                  onClick={() => setFuentes((l) => l.filter((x) => x.id !== f.id))}
+                  className="font-pixel text-[7px] text-muted-foreground hover:text-destructive"
+                >
+                  QUITAR
+                </button>
+              </li>
+            ))}
+            {!fuentes.length && (
+              <li className="py-8 text-center text-xs text-muted-foreground">No usaste fuentes todavía.</li>
+            )}
+          </ul>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <div className="glass flex items-center gap-4 p-5">
+            <Chispa skin={skin} estado="emocionado" size="sm" flotando={false} />
+            <div className="min-w-0">
+              <p className="font-pixel text-[8px] text-muted-foreground">¿QUÉ APRENDISTE?</p>
+              <h1 className="font-pixel mt-2 truncate text-sm text-primary text-glow-amarillo">
+                {titulo.toUpperCase()}
+              </h1>
+            </div>
+          </div>
+
+          <Textarea
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="Explicalo como si me lo enseñaras a mí: ¿de qué se trata? ¿Qué te sorprendió?"
+            className="glass min-h-[24rem] resize-y p-5 text-base leading-relaxed"
+          />
+
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button variant={dictando ? "destructive" : "contorno"} onClick={dictar} className="font-pixel text-[10px]">
+              {dictando ? <MicOff /> : <Mic />}
+              {dictando ? "DETENER" : "DICTAR"}
+            </Button>
+            <span className="text-xs text-muted-foreground">{texto.trim().length} caracteres</span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button variant="chispa" size="xl" className="font-pixel text-xs" disabled={guardando} onClick={() => guardar(true, false)}>
+              {guardando ? "GUARDANDO..." : "PUBLICAR"}
+            </Button>
+            <Button variant="contorno" size="xl" className="font-pixel text-xs" disabled={guardando} onClick={() => guardar(false, false)}>
+              FINALIZAR
+            </Button>
+          </div>
+          <p className="text-center text-[11px] text-muted-foreground">
+            Publicar la comparte en la comunidad. Finalizar la guarda solo para vos.
+          </p>
+        </section>
+
+        <NotasPanel
+          pestanas={pestanas}
+          setPestanas={setPestanas}
+          activa={activa}
+          setActiva={setActiva}
+          titulo="MIS NOTAS"
+          alto="min-h-[18rem]"
+          pie={
+            <Button
+              variant="chispa"
+              size="sm"
+              className="font-pixel text-[9px]"
+              disabled={guardando || !notas.trim()}
+              onClick={() => guardar(true, true)}
+            >
+              <NotebookPen /> PUBLICAR CON NOTAS
+            </Button>
+          }
+        />
+      </div>
+    </main>
+  );
+}
