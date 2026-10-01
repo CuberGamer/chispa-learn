@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { BotonCompartir } from "@/components/boton-compartir";
 import { InvitarTema } from "@/components/invitar-tema";
+import { NotasPanel, type Pestana } from "@/components/notas-panel";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import {
   PixelCheck,
@@ -44,7 +45,6 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 });
 
 type Fuente = { id: string; titulo: string; url: string };
-type Pestana = { id: string; nombre: string; texto: string };
 
 /** Fuentes confiables sugeridas por la app. */
 const FUENTES_RECOMENDADAS: Fuente[] = [
@@ -154,6 +154,10 @@ function Sesion() {
         titulo={tema.data?.title ?? "Tema"}
         minutos={minutos}
         notas={notas}
+        pestanas={pestanas}
+        setPestanas={setPestanas}
+        fuentes={fuentes}
+        setFuentes={setFuentes}
         onLimpiarNotas={() => {
           localStorage.removeItem(claveNotas);
           setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: "" }]);
@@ -342,63 +346,7 @@ function Sesion() {
         </section>
 
         {/* ——— Notas con pestañas ——— */}
-        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
-          <div className="flex items-center gap-2">
-            <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">NOTAS</h2>
-            <span className="ml-auto text-[11px] text-muted-foreground">Se guardan solas</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {pestanas.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onDoubleClick={() => {
-                  const nombre = window.prompt("Nombre de la pestaña", p.nombre);
-                  if (nombre)
-                    setPestanas((l) =>
-                      l.map((x) => (x.id === p.id ? { ...x, nombre } : x)),
-                    );
-                }}
-                onClick={() => setActiva(p.id)}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[11px] transition-colors",
-                  p.id === activa
-                    ? "bg-primary/20 text-primary"
-                    : "bg-white/5 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {p.nombre}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-label="Nueva pestaña"
-              onClick={() => {
-                const id = crypto.randomUUID();
-                setPestanas((l) => [
-                  ...l,
-                  { id, nombre: `Pestaña ${l.length + 1}`, texto: "" },
-                ]);
-                setActiva(id);
-              }}
-              className="flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
-            >
-              <PixelMas size={10} />
-            </button>
-          </div>
-
-          <Textarea
-            value={notaActiva.texto}
-            onChange={(e) =>
-              setPestanas((l) =>
-                l.map((x) => (x.id === notaActiva.id ? { ...x, texto: e.target.value } : x)),
-              )
-            }
-            placeholder="Anotá ideas, datos y palabras clave mientras investigás…"
-            className="min-h-[22rem] resize-y bg-transparent p-3 text-sm leading-relaxed"
-          />
-        </section>
+        <NotasPanel pestanas={pestanas} setPestanas={setPestanas} activa={activa} setActiva={setActiva} />
       </div>
     </main>
   );
@@ -420,6 +368,10 @@ function Explicacion({
   titulo,
   minutos,
   notas,
+  pestanas,
+  setPestanas,
+  fuentes,
+  setFuentes,
   onLimpiarNotas,
   onListo,
 }: {
@@ -427,6 +379,10 @@ function Explicacion({
   titulo: string;
   minutos: number;
   notas: string;
+  pestanas: Pestana[];
+  setPestanas: (fn: (l: Pestana[]) => Pestana[]) => void;
+  fuentes: Fuente[];
+  setFuentes: (fn: (l: Fuente[]) => Fuente[]) => void;
   onLimpiarNotas: () => void;
   onListo: () => void;
 }) {
@@ -437,7 +393,7 @@ function Explicacion({
   const [publico, setPublico] = useState(false);
   const [guardada, setGuardada] = useState<string | null>(null);
   const [publicando, setPublicando] = useState(false);
-  const [verNotas, setVerNotas] = useState(false);
+  const [activa, setActiva] = useState(pestanas[0]?.id ?? "p1");
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
@@ -490,11 +446,12 @@ function Explicacion({
     toast.success("Te escucho. Explicá con tus palabras.");
   }
 
-  async function guardar() {
+  async function guardar(esPublico: boolean, conNotas: boolean) {
     if (texto.trim().length < 10) {
       toast.error("Escribí un poco más: contame qué entendiste.");
       return;
     }
+    const final = conNotas && notas.trim() ? `${texto.trim()}\n\n— Mis notas —\n${notas.trim()}` : texto.trim();
     setGuardando(true);
     try {
       detener();
@@ -508,8 +465,8 @@ function Explicacion({
           user_id: userId,
           topic_id: temaId,
           duration_minutes: minutos,
-          explanation_text: texto.trim(),
-          is_public: publico,
+          explanation_text: final,
+          is_public: esPublico,
         })
         .select("id")
         .single();
@@ -531,6 +488,7 @@ function Explicacion({
 
 
       onLimpiarNotas();
+      setPublico(esPublico);
       setGuardada(sesion.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
@@ -598,129 +556,124 @@ function Explicacion({
     );
   }
 
+  const [nuevaFuente, setNuevaFuente] = useState("");
 
+  function agregarFuente() {
+    const v = nuevaFuente.trim();
+    if (!v) return;
+    const url = normalizarUrlFuente(v);
+    if (fuentes.some((f) => f.url.toLowerCase() === url.toLowerCase())) {
+      toast.error("Esa fuente ya está");
+      return;
+    }
+    setFuentes((l) => [...l, { id: crypto.randomUUID(), titulo: v, url }]);
+    setNuevaFuente("");
+  }
 
   return (
-    <main className="mx-auto w-full max-w-2xl space-y-6 px-5 pb-16">
-      <div className="glass flex items-center gap-4 p-5">
-        <Chispa skin={skin} estado="emocionado" size="sm" flotando={false} />
-        <div>
-          <h1 className="font-pixel text-sm text-primary text-glow-amarillo">
-            ¿QUÉ APRENDISTE?
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">{titulo}</p>
-        </div>
-      </div>
-
-      <BurbujaChispa>
-        Explicalo como si me lo enseñaras a mí. Si dictás, revisá el texto antes de guardar.
-      </BurbujaChispa>
-
-      {notas.trim() && (
-        <div className="glass space-y-3 p-4">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <h2 className="font-pixel text-[10px] text-secondary">NOTAS DE TU INVESTIGACIÓN</h2>
-            <div className="flex flex-wrap gap-2">
-              <Button
-                variant="contorno"
-                size="sm"
-                className="font-pixel text-[10px]"
-                onClick={() => setVerNotas((v) => !v)}
-                aria-expanded={verNotas}
-              >
-                <NotebookPen />
-                {verNotas ? "OCULTAR MIS NOTAS" : "USAR MIS NOTAS"}
-              </Button>
-              {verNotas && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="font-pixel text-[10px]"
-                  onClick={() =>
-                    setTexto((t) => (t.trim() ? `${t.trim()}\n\n${notas.trim()}` : notas.trim()))
-                  }
+    <main className="mx-auto w-full max-w-[1500px] px-4 pb-16 lg:px-8">
+      <div className="grid gap-5 lg:grid-cols-[300px_minmax(0,1fr)_360px]">
+        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
+          <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">FUENTES USADAS</h2>
+          <form
+            className="flex gap-2"
+            onSubmit={(e) => {
+              e.preventDefault();
+              agregarFuente();
+            }}
+          >
+            <input
+              value={nuevaFuente}
+              onChange={(e) => setNuevaFuente(e.target.value)}
+              placeholder="URL o dominio"
+              className="glass min-w-0 flex-1 bg-transparent px-3 py-2 text-xs outline-none placeholder:text-muted-foreground"
+            />
+            <Button type="submit" variant="contorno" size="sm" className="font-pixel text-[8px]">
+              AGREGAR
+            </Button>
+          </form>
+          <ul className="max-h-[28rem] space-y-2 overflow-y-auto pr-1">
+            {fuentes.map((f) => (
+              <li key={f.id} className="glass flex items-center gap-2 p-3">
+                <a href={f.url} target="_blank" rel="noreferrer noopener" className="min-w-0 flex-1">
+                  <span className="block truncate text-sm">{f.titulo}</span>
+                  <span className="block truncate text-[11px] text-muted-foreground">{f.url}</span>
+                </a>
+                <button
+                  type="button"
+                  aria-label={`Quitar ${f.titulo}`}
+                  onClick={() => setFuentes((l) => l.filter((x) => x.id !== f.id))}
+                  className="font-pixel text-[7px] text-muted-foreground hover:text-destructive"
                 >
-                  AGREGAR AL TEXTO
-                </Button>
-              )}
+                  QUITAR
+                </button>
+              </li>
+            ))}
+            {!fuentes.length && (
+              <li className="py-8 text-center text-xs text-muted-foreground">No usaste fuentes todavía.</li>
+            )}
+          </ul>
+        </section>
+
+        <section className="flex flex-col gap-4">
+          <div className="glass flex items-center gap-4 p-5">
+            <Chispa skin={skin} estado="emocionado" size="sm" flotando={false} />
+            <div className="min-w-0">
+              <p className="font-pixel text-[8px] text-muted-foreground">¿QUÉ APRENDISTE?</p>
+              <h1 className="font-pixel mt-2 truncate text-sm text-primary text-glow-amarillo">
+                {titulo.toUpperCase()}
+              </h1>
             </div>
           </div>
-          {verNotas ? (
-            <p className="whitespace-pre-wrap text-sm leading-relaxed text-muted-foreground">
-              {notas.trim()}
-            </p>
-          ) : (
-            <p className="text-xs text-muted-foreground">
-              Tus notas están guardadas. Apretá “usar mis notas” para verlas.
-            </p>
-          )}
-        </div>
-      )}
 
-      <Textarea
-        value={texto}
-        onChange={(e) => setTexto(e.target.value)}
-        placeholder="Empezá por lo más importante: ¿de qué se trata el tema? ¿Qué te sorprendió?"
-        className="glass min-h-64 resize-y p-4 text-base leading-relaxed"
-      />
-
-      <button
-        type="button"
-        role="switch"
-        aria-checked={publico}
-        onClick={() => setPublico((p) => !p)}
-        className="glass glass-hover flex w-full items-center gap-4 p-4 text-left"
-      >
-        <span
-          className={cn(
-            "relative h-7 w-12 shrink-0 rounded-full border transition-colors",
-            publico
-              ? "border-primary/60 bg-primary/30 glow-amarillo"
-              : "border-white/15 bg-white/5",
-          )}
-        >
-          <span
-            className={cn(
-              "absolute top-1/2 size-5 -translate-y-1/2 rounded-sm transition-all",
-              publico ? "left-6 bg-primary" : "left-1 bg-muted-foreground",
-            )}
+          <Textarea
+            value={texto}
+            onChange={(e) => setTexto(e.target.value)}
+            placeholder="Explicalo como si me lo enseñaras a mí: ¿de qué se trata? ¿Qué te sorprendió?"
+            className="glass min-h-[24rem] resize-y p-5 text-base leading-relaxed"
           />
-        </span>
-        <span className="min-w-0">
-          <span className="font-pixel block text-[10px] text-foreground">
-            COMPARTIR EN LA COMUNIDAD
-          </span>
-          <span className="mt-1 block text-xs text-muted-foreground">
-            Tu explicación aparece en el feed con tu nombre y tu Chispa. Podés cambiarlo
-            después desde el historial.
-          </span>
-        </span>
-      </button>
 
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button
-          variant={dictando ? "destructive" : "contorno"}
-          onClick={dictar}
-          className="font-pixel text-[10px]"
-        >
-          {dictando ? <MicOff /> : <Mic />}
-          {dictando ? "DETENER" : "DICTAR"}
-        </Button>
-        <span className="text-xs text-muted-foreground">{texto.trim().length} caracteres</span>
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button variant={dictando ? "destructive" : "contorno"} onClick={dictar} className="font-pixel text-[10px]">
+              {dictando ? <MicOff /> : <Mic />}
+              {dictando ? "DETENER" : "DICTAR"}
+            </Button>
+            <span className="text-xs text-muted-foreground">{texto.trim().length} caracteres</span>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Button variant="chispa" size="xl" className="font-pixel text-xs" disabled={guardando} onClick={() => guardar(true, false)}>
+              {guardando ? "GUARDANDO..." : "PUBLICAR"}
+            </Button>
+            <Button variant="contorno" size="xl" className="font-pixel text-xs" disabled={guardando} onClick={() => guardar(false, false)}>
+              FINALIZAR
+            </Button>
+          </div>
+          <p className="text-center text-[11px] text-muted-foreground">
+            Publicar la comparte en la comunidad. Finalizar la guarda solo para vos.
+          </p>
+        </section>
+
+        <NotasPanel
+          pestanas={pestanas}
+          setPestanas={setPestanas}
+          activa={activa}
+          setActiva={setActiva}
+          titulo="MIS NOTAS"
+          alto="min-h-[18rem]"
+          pie={
+            <Button
+              variant="chispa"
+              size="sm"
+              className="font-pixel text-[9px]"
+              disabled={guardando || !notas.trim()}
+              onClick={() => guardar(true, true)}
+            >
+              <NotebookPen /> PUBLICAR CON NOTAS
+            </Button>
+          }
+        />
       </div>
-
-      <Button
-        variant="chispa"
-        size="xl"
-        className="font-pixel w-full text-xs"
-        onClick={guardar}
-        disabled={guardando}
-      >
-        {guardando ? "GUARDANDO..." : "GUARDAR EXPLICACIÓN"}
-      </Button>
     </main>
   );
 }
-
-
-
