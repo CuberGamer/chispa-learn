@@ -7,6 +7,7 @@ import { z } from "zod";
 
 import { BotonCompartir } from "@/components/boton-compartir";
 import { InvitarTema } from "@/components/invitar-tema";
+import { NotasPanel, type Pestana } from "@/components/notas-panel";
 import { Chispa, BurbujaChispa } from "@/components/chispa";
 import {
   PixelCheck,
@@ -44,7 +45,6 @@ export const Route = createFileRoute("/_authenticated/sesion")({
 });
 
 type Fuente = { id: string; titulo: string; url: string };
-type Pestana = { id: string; nombre: string; texto: string };
 
 /** Fuentes confiables sugeridas por la app. */
 const FUENTES_RECOMENDADAS: Fuente[] = [
@@ -154,6 +154,10 @@ function Sesion() {
         titulo={tema.data?.title ?? "Tema"}
         minutos={minutos}
         notas={notas}
+        pestanas={pestanas}
+        setPestanas={setPestanas}
+        fuentes={fuentes}
+        setFuentes={setFuentes}
         onLimpiarNotas={() => {
           localStorage.removeItem(claveNotas);
           setPestanas([{ id: "p1", nombre: "Pestaña 1", texto: "" }]);
@@ -342,63 +346,7 @@ function Sesion() {
         </section>
 
         {/* ——— Notas con pestañas ——— */}
-        <section className="glass flex h-fit flex-col gap-3 p-4 lg:sticky lg:top-32">
-          <div className="flex items-center gap-2">
-            <h2 className="font-pixel text-[9px] text-primary text-glow-amarillo">NOTAS</h2>
-            <span className="ml-auto text-[11px] text-muted-foreground">Se guardan solas</span>
-          </div>
-
-          <div className="flex flex-wrap items-center gap-1.5">
-            {pestanas.map((p) => (
-              <button
-                key={p.id}
-                type="button"
-                onDoubleClick={() => {
-                  const nombre = window.prompt("Nombre de la pestaña", p.nombre);
-                  if (nombre)
-                    setPestanas((l) =>
-                      l.map((x) => (x.id === p.id ? { ...x, nombre } : x)),
-                    );
-                }}
-                onClick={() => setActiva(p.id)}
-                className={cn(
-                  "rounded-full px-3 py-1.5 text-[11px] transition-colors",
-                  p.id === activa
-                    ? "bg-primary/20 text-primary"
-                    : "bg-white/5 text-muted-foreground hover:text-foreground",
-                )}
-              >
-                {p.nombre}
-              </button>
-            ))}
-            <button
-              type="button"
-              aria-label="Nueva pestaña"
-              onClick={() => {
-                const id = crypto.randomUUID();
-                setPestanas((l) => [
-                  ...l,
-                  { id, nombre: `Pestaña ${l.length + 1}`, texto: "" },
-                ]);
-                setActiva(id);
-              }}
-              className="flex size-7 items-center justify-center rounded-full border border-white/10 bg-white/5 text-muted-foreground transition-colors hover:text-primary"
-            >
-              <PixelMas size={10} />
-            </button>
-          </div>
-
-          <Textarea
-            value={notaActiva.texto}
-            onChange={(e) =>
-              setPestanas((l) =>
-                l.map((x) => (x.id === notaActiva.id ? { ...x, texto: e.target.value } : x)),
-              )
-            }
-            placeholder="Anotá ideas, datos y palabras clave mientras investigás…"
-            className="min-h-[22rem] resize-y bg-transparent p-3 text-sm leading-relaxed"
-          />
-        </section>
+        <NotasPanel pestanas={pestanas} setPestanas={setPestanas} activa={activa} setActiva={setActiva} />
       </div>
     </main>
   );
@@ -420,6 +368,10 @@ function Explicacion({
   titulo,
   minutos,
   notas,
+  pestanas,
+  setPestanas,
+  fuentes,
+  setFuentes,
   onLimpiarNotas,
   onListo,
 }: {
@@ -427,6 +379,10 @@ function Explicacion({
   titulo: string;
   minutos: number;
   notas: string;
+  pestanas: Pestana[];
+  setPestanas: (fn: (l: Pestana[]) => Pestana[]) => void;
+  fuentes: Fuente[];
+  setFuentes: (fn: (l: Fuente[]) => Fuente[]) => void;
   onLimpiarNotas: () => void;
   onListo: () => void;
 }) {
@@ -437,7 +393,7 @@ function Explicacion({
   const [publico, setPublico] = useState(false);
   const [guardada, setGuardada] = useState<string | null>(null);
   const [publicando, setPublicando] = useState(false);
-  const [verNotas, setVerNotas] = useState(false);
+  const [activa, setActiva] = useState(pestanas[0]?.id ?? "p1");
   const recRef = useRef<Reconocimiento | null>(null);
 
   const detener = useCallback(() => {
@@ -490,11 +446,12 @@ function Explicacion({
     toast.success("Te escucho. Explicá con tus palabras.");
   }
 
-  async function guardar() {
+  async function guardar(esPublico: boolean, conNotas: boolean) {
     if (texto.trim().length < 10) {
       toast.error("Escribí un poco más: contame qué entendiste.");
       return;
     }
+    const final = conNotas && notas.trim() ? `${texto.trim()}\n\n— Mis notas —\n${notas.trim()}` : texto.trim();
     setGuardando(true);
     try {
       detener();
@@ -508,8 +465,8 @@ function Explicacion({
           user_id: userId,
           topic_id: temaId,
           duration_minutes: minutos,
-          explanation_text: texto.trim(),
-          is_public: publico,
+          explanation_text: final,
+          is_public: esPublico,
         })
         .select("id")
         .single();
@@ -531,6 +488,7 @@ function Explicacion({
 
 
       onLimpiarNotas();
+      setPublico(esPublico);
       setGuardada(sesion.id);
     } catch (error) {
       toast.error(error instanceof Error ? error.message : "No pude guardar tu explicación");
