@@ -6,4 +6,4 @@
 - [x] Repoblar la base del remix: 20 temas, 17 etiquetas, 5 logros
 - [x] Verificar build (OK) y páginas públicas (sin errores de consola)
 - [ ] Probar los flujos con sesión iniciada — bloqueado: la base del remix no tiene cuentas; el usuario debe registrarse desde la vista previa
-- [ ] Actualizar la vista de tema ya resuelto según el nuevo boceto
+- [x] Actualizar la vista de tema ya resuelto según el nuevo boceto
