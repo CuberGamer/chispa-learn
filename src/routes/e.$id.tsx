@@ -35,11 +35,14 @@ export const Route = createFileRoute("/e/$id")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
+  validateSearch: (s: Record<string, unknown>): { desde?: "grafo" } =>
+    s.desde === "grafo" ? { desde: "grafo" } : {},
   component: ExplicacionPublica,
 });
 
 function ExplicacionPublica() {
   const { id } = Route.useParams();
+  const { desde } = Route.useSearch();
   const [panel, setPanel] = useState<"fuentes" | "notas">("fuentes");
   const [fuentes, setFuentes] = useState<{ nombre: string; url: string }[]>([]);
 
@@ -52,7 +55,6 @@ function ExplicacionPublica() {
           "id, user_id, topic_id, duration_minutes, explanation_text, created_at, topics(title, description, icon, topic_tags(tags(name)))",
         )
         .eq("id", id)
-        .eq("is_public", true)
         .maybeSingle();
       if (error) throw error;
       if (!data) return null;
@@ -192,6 +194,11 @@ function ExplicacionPublica() {
               </div>
             </section>
 
+            {desde === "grafo" && (
+              <Button asChild variant="secondary" size="lg" className="font-pixel w-full text-[10px]">
+                <Link to="/grafo">VOLVER AL GRAFO</Link>
+              </Button>
+            )}
             {sesion.data.topic_id && (
               <Button asChild variant="chispa" size="xl" className="font-pixel w-full text-[11px]">
                 <Link to="/tema/$id" params={{ id: sesion.data.topic_id }}>
