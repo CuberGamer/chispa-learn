@@ -309,6 +309,54 @@ export type Database = {
           },
         ]
       }
+      topic_links: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string | null
+          strength: number
+          topic_a: string
+          topic_b: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          strength?: number
+          topic_a: string
+          topic_b: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          strength?: number
+          topic_a?: string
+          topic_b?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topic_links_topic_a_fkey"
+            columns: ["topic_a"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "topic_links_topic_b_fkey"
+            columns: ["topic_b"]
+            isOneToOne: false
+            referencedRelation: "topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       topic_tags: {
         Row: {
           tag_id: string
