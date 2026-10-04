@@ -15,6 +15,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedBibliotecaRouteImport } from './routes/_authenticated/biblioteca'
 import { Route as AuthenticatedComunidadRouteImport } from './routes/_authenticated/comunidad'
 import { Route as AuthenticatedCrearTemaRouteImport } from './routes/_authenticated/crear-tema'
+import { Route as AuthenticatedGrafoRouteImport } from './routes/_authenticated/grafo'
 import { Route as AuthenticatedHistorialRouteImport } from './routes/_authenticated/historial'
 import { Route as AuthenticatedInicioRouteImport } from './routes/_authenticated/inicio'
 import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated/perfil'
@@ -51,6 +52,11 @@ const AuthenticatedComunidadRoute = AuthenticatedComunidadRouteImport.update({
 const AuthenticatedCrearTemaRoute = AuthenticatedCrearTemaRouteImport.update({
   id: '/crear-tema',
   path: '/crear-tema',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedGrafoRoute = AuthenticatedGrafoRouteImport.update({
+  id: '/grafo',
+  path: '/grafo',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedHistorialRoute = AuthenticatedHistorialRouteImport.update({
@@ -100,6 +106,7 @@ export interface FileRoutesByFullPath {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/comunidad': typeof AuthenticatedComunidadRoute
   '/crear-tema': typeof AuthenticatedCrearTemaRoute
+  '/grafo': typeof AuthenticatedGrafoRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/perfil': typeof AuthenticatedPerfilRoute
@@ -115,6 +122,7 @@ export interface FileRoutesByTo {
   '/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/comunidad': typeof AuthenticatedComunidadRoute
   '/crear-tema': typeof AuthenticatedCrearTemaRoute
+  '/grafo': typeof AuthenticatedGrafoRoute
   '/historial': typeof AuthenticatedHistorialRoute
   '/inicio': typeof AuthenticatedInicioRoute
   '/perfil': typeof AuthenticatedPerfilRoute
@@ -132,6 +140,7 @@ export interface FileRoutesById {
   '/_authenticated/biblioteca': typeof AuthenticatedBibliotecaRoute
   '/_authenticated/comunidad': typeof AuthenticatedComunidadRoute
   '/_authenticated/crear-tema': typeof AuthenticatedCrearTemaRoute
+  '/_authenticated/grafo': typeof AuthenticatedGrafoRoute
   '/_authenticated/historial': typeof AuthenticatedHistorialRoute
   '/_authenticated/inicio': typeof AuthenticatedInicioRoute
   '/_authenticated/perfil': typeof AuthenticatedPerfilRoute
@@ -149,6 +158,7 @@ export interface FileRouteTypes {
     | '/biblioteca'
     | '/comunidad'
     | '/crear-tema'
+    | '/grafo'
     | '/historial'
     | '/inicio'
     | '/perfil'
@@ -164,6 +174,7 @@ export interface FileRouteTypes {
     | '/biblioteca'
     | '/comunidad'
     | '/crear-tema'
+    | '/grafo'
     | '/historial'
     | '/inicio'
     | '/perfil'
@@ -180,6 +191,7 @@ export interface FileRouteTypes {
     | '/_authenticated/biblioteca'
     | '/_authenticated/comunidad'
     | '/_authenticated/crear-tema'
+    | '/_authenticated/grafo'
     | '/_authenticated/historial'
     | '/_authenticated/inicio'
     | '/_authenticated/perfil'
@@ -239,6 +251,13 @@ declare module '@tanstack/react-router' {
       path: '/crear-tema'
       fullPath: '/crear-tema'
       preLoaderRoute: typeof AuthenticatedCrearTemaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/grafo': {
+      id: '/_authenticated/grafo'
+      path: '/grafo'
+      fullPath: '/grafo'
+      preLoaderRoute: typeof AuthenticatedGrafoRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/historial': {
@@ -304,6 +323,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedBibliotecaRoute: typeof AuthenticatedBibliotecaRoute
   AuthenticatedComunidadRoute: typeof AuthenticatedComunidadRoute
   AuthenticatedCrearTemaRoute: typeof AuthenticatedCrearTemaRoute
+  AuthenticatedGrafoRoute: typeof AuthenticatedGrafoRoute
   AuthenticatedHistorialRoute: typeof AuthenticatedHistorialRoute
   AuthenticatedInicioRoute: typeof AuthenticatedInicioRoute
   AuthenticatedPerfilRoute: typeof AuthenticatedPerfilRoute
@@ -317,6 +337,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBibliotecaRoute: AuthenticatedBibliotecaRoute,
   AuthenticatedComunidadRoute: AuthenticatedComunidadRoute,
   AuthenticatedCrearTemaRoute: AuthenticatedCrearTemaRoute,
+  AuthenticatedGrafoRoute: AuthenticatedGrafoRoute,
   AuthenticatedHistorialRoute: AuthenticatedHistorialRoute,
   AuthenticatedInicioRoute: AuthenticatedInicioRoute,
   AuthenticatedPerfilRoute: AuthenticatedPerfilRoute,
