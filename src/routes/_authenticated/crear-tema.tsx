@@ -1,3 +1,4 @@
+import { MATERIAS } from "@/lib/materias";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
@@ -116,6 +117,7 @@ function CrearTema() {
   const [descripcion, setDescripcion] = useState("");
   const [duracion, setDuracion] = useState(15);
   const [icono, setIcono] = useState("libro");
+  const [materia, setMateria] = useState("General");
   const [selectorIcono, setSelectorIcono] = useState(false);
   const [busquedaIcono, setBusquedaIcono] = useState("");
   const [busqueda, setBusqueda] = useState("");
@@ -146,6 +148,7 @@ function CrearTema() {
           description: descripcion,
           duration_suggested: duracion,
           icon: icono,
+          subject: materia,
           tags: tagsElegidas,
         },
       }),
@@ -354,6 +357,25 @@ function CrearTema() {
               <TopicIcon icon={icono} size={27} className="transition-transform group-hover:scale-110" />
               <span className="font-pixel text-[6px] text-muted-foreground">CAMBIAR</span>
             </Button>
+          </div>
+
+          <div className="space-y-2">
+            <p className="font-pixel text-[8px] text-primary">MATERIA</p>
+            <div className="flex flex-wrap gap-1.5">
+              {MATERIAS.map((m) => (
+                <Button
+                  key={m}
+                  type="button"
+                  size="sm"
+                  variant={materia === m ? "chispa" : "secondary"}
+                  aria-pressed={materia === m}
+                  className="h-8 rounded-full px-3 text-xs"
+                  onClick={() => setMateria(m)}
+                >
+                  {m}
+                </Button>
+              ))}
+            </div>
           </div>
 
           <Textarea
