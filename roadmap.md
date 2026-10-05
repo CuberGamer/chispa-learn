@@ -7,3 +7,4 @@
 - [x] Verificar build (OK) y páginas públicas (sin errores de consola)
 - [ ] Probar los flujos con sesión iniciada — bloqueado: la base del remix no tiene cuentas; el usuario debe registrarse desde la vista previa
 - [x] Actualizar la vista de tema ya resuelto según el nuevo boceto
+- [x] Grafo de temas (/grafo + mini en inicio) según especificación
