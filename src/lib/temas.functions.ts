@@ -2,11 +2,13 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { MATERIAS } from "@/lib/materias";
 
 const esquemaTemaIA = z.object({
   title: z.string().min(3).max(120),
   description: z.string().min(10).max(800),
   duration_suggested: z.union([z.literal(5), z.literal(15), z.literal(30)]),
+  subject: z.string().catch("General").transform((v) => ((MATERIAS as readonly string[]).includes(v) ? v : "General")),
   tags: z.array(z.string().min(1).max(30)).min(1).max(5),
 });
 
@@ -28,6 +30,7 @@ Devolvé ÚNICAMENTE un objeto JSON válido (sin markdown, sin comentarios, sin 
   "title": "Título corto y atractivo del tema (máx 120 caracteres)",
   "description": "Descripción de 2-4 oraciones que invite a investigar el tema (máx 800 caracteres)",
   "duration_suggested": 5 | 15 | 30,
+  "subject": una de: ${MATERIAS.join(", ")},
   "tags": ["etiqueta1", "etiqueta2", "etiqueta3"]
 }
 Las etiquetas deben ser palabras simples en minúsculas, sin espacios, relacionadas con el tema. Entre 1 y 5 etiquetas.`;
@@ -129,6 +132,7 @@ export const generarTemaIA = createServerFn({ method: "POST" })
         description: tema.description,
         duration_suggested: tema.duration_suggested,
         source: "ia_generado",
+        subject: tema.subject,
       })
       .select("id, title, description, duration_suggested")
       .single();
