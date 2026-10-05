@@ -36,7 +36,7 @@ export const Route = createFileRoute("/e/$id")({
     ],
   }),
   validateSearch: (s: Record<string, unknown>): { desde?: "grafo" } =>
-    s.desde === "grafo" ? { desde: "grafo" } : {},
+    s["desde"] === "grafo" ? { desde: "grafo" } : {},
   component: ExplicacionPublica,
 });
 
