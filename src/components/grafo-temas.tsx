@@ -59,7 +59,7 @@ function useMedida<T extends HTMLElement>() {
   const [m, setM] = useState({ w: 300, h: 300 });
   useEffect(() => {
     if (!ref.current) return;
-    const ro = new ResizeObserver(([e]) => setM({ w: e.contentRect.width, h: e.contentRect.height }));
+    const ro = new ResizeObserver(([e]) => e && setM({ w: e.contentRect.width, h: e.contentRect.height }));
     ro.observe(ref.current);
     return () => ro.disconnect();
   }, []);
@@ -240,7 +240,7 @@ export function GrafoTemas() {
         tagsOff,
         local,
         posiciones: posiciones.current,
-      } satisfies EstadoGuardado),
+      }),
     );
   }, [seleccionado, umbral, materiasOff, tagsOff, local]);
 
@@ -279,8 +279,14 @@ export function GrafoTemas() {
       setSeleccionado((s) => (s === n.id ? null : n.id));
       return;
     }
-    if (!origen) return setOrigen(n.id);
-    if (origen === n.id) return setOrigen(null);
+    if (!origen) {
+      setOrigen(n.id);
+      return;
+    }
+    if (origen === n.id) {
+      setOrigen(null);
+      return;
+    }
     setNueva({ a: origen, b: n.id });
     setOrigen(null);
     setMotivo("");
@@ -294,7 +300,10 @@ export function GrafoTemas() {
       { user_id: datos.data.userId, topic_a: a, topic_b: b, kind: "manual", label: motivo.trim() || null, strength: fuerzaManual },
       { onConflict: "user_id,topic_a,topic_b,kind" },
     );
-    if (error) return toast.error("No se pudo guardar la conexión");
+    if (error) {
+      toast.error("No se pudo guardar la conexión");
+      return;
+    }
     // Si estaba ignorada, la reactivamos
     await db.from("topic_links").delete().eq("user_id", datos.data.userId).eq("topic_a", a).eq("topic_b", b).eq("kind", "ignorada");
     setNueva(null);
@@ -312,7 +321,10 @@ export function GrafoTemas() {
       const { error } = await db
         .from("topic_links")
         .insert({ user_id: datos.data.userId, topic_a: a, topic_b: b, kind: "ignorada", strength: 1 });
-      if (error) return toast.error("No se pudo ignorar la asociación");
+      if (error) {
+        toast.error("No se pudo ignorar la asociación");
+        return;
+      }
       toast.success("Asociación ignorada");
     }
     setEnlaceSel(null);
@@ -336,7 +348,7 @@ export function GrafoTemas() {
 
         <div className="space-y-3">
           <p className="font-pixel text-[9px] text-primary">FUERZA MÍNIMA: {umbral}</p>
-          <Slider min={1} max={10} step={1} value={[umbral]} onValueChange={([v]) => setUmbral(v)} />
+          <Slider min={1} max={10} step={1} value={[umbral]} onValueChange={([v]) => setUmbral(v ?? 3)} />
           <p className="text-[11px] text-muted-foreground">Oculta las conexiones débiles. Las manuales siempre se ven.</p>
         </div>
 
@@ -491,7 +503,7 @@ export function GrafoTemas() {
             </p>
             <Input value={motivo} onChange={(e) => setMotivo(e.target.value)} maxLength={120} placeholder="Motivo (opcional)" />
             <p className="text-[11px] text-muted-foreground">Fuerza: {fuerzaManual}</p>
-            <Slider min={1} max={10} step={1} value={[fuerzaManual]} onValueChange={([v]) => setFuerzaManual(v)} />
+            <Slider min={1} max={10} step={1} value={[fuerzaManual]} onValueChange={([v]) => setFuerzaManual(v ?? 6)} />
             <div className="flex gap-2">
               <Button variant="chispa" size="sm" className="font-pixel flex-1 text-[8px]" onClick={crearConexion}>
                 CONECTAR

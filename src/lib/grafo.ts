@@ -111,8 +111,8 @@ export function calcularEnlaces(nodos: NodoTema[], conexiones: ConexionGuardada[
 
   for (let i = 0; i < nodos.length; i++) {
     for (let j = i + 1; j < nodos.length; j++) {
-      const a = nodos[i];
-      const b = nodos[j];
+      const a = nodos[i]!;
+      const b = nodos[j]!;
       const par = clavePar(a.id, b.id);
       if (ignoradas.has(par)) continue;
       let fuerza = 0;
