@@ -395,6 +395,7 @@ export type Database = {
           icon: string
           id: string
           source: string
+          subject: string
           title: string
         }
         Insert: {
@@ -404,6 +405,7 @@ export type Database = {
           icon?: string
           id?: string
           source?: string
+          subject?: string
           title: string
         }
         Update: {
@@ -413,6 +415,7 @@ export type Database = {
           icon?: string
           id?: string
           source?: string
+          subject?: string
           title?: string
         }
         Relationships: []

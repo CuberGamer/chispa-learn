@@ -1,5 +1,4 @@
 import { supabase } from "@/integrations/supabase/client";
-import { TOPIC_ICONS } from "@/components/topic-icon";
 
 export type NodoTema = {
   id: string;
@@ -32,18 +31,21 @@ export type ConexionGuardada = {
 };
 
 export const COLORES_MATERIA: Record<string, string> = {
-  Estudio: "#facc15",
-  Tecnología: "#38bdf8",
-  Ciencia: "#4ade80",
-  Espacio: "#a78bfa",
-  Mundo: "#2dd4bf",
-  Humanidades: "#fb923c",
-  Arte: "#f472b6",
-  Música: "#e879f9",
-  Naturaleza: "#86efac",
-  Cultura: "#f87171",
+  Matemática: "#facc15",
+  Física: "#38bdf8",
+  Química: "#4ade80",
+  Biología: "#86efac",
+  Historia: "#fb923c",
+  Geografía: "#2dd4bf",
+  "Lengua y Literatura": "#f472b6",
+  Economía: "#a78bfa",
+  Tecnología: "#60a5fa",
+  Arte: "#e879f9",
+  Música: "#f87171",
+  Filosofía: "#c4b5fd",
+  General: "#94a3b8",
 };
-export const colorMateria = (m: string) => COLORES_MATERIA[m] ?? "#facc15";
+export const colorMateria = (m: string) => COLORES_MATERIA[m] ?? "#94a3b8";
 
 const VACIAS = new Set(
   "porque cuando donde desde hasta sobre entre tambien también puede pueden tiene tienen hacer este esta estos estas ellos ellas otros otras mismo misma cada todo todos todas siempre nunca entonces aunque mientras durante según segun sobre como cómo para pero sino además ademas porque cual cuales quien quienes muchos mucha mucho muchas poco pocos tanto tanta forma parte manera ejemplo mis notas".split(
@@ -64,7 +66,7 @@ export const clavePar = (a: string, b: string) => (a < b ? `${a}|${b}` : `${b}|$
 export async function cargarDatosGrafo(userId: string) {
   const { data, error } = await supabase
     .from("study_sessions")
-    .select("id, topic_id, explanation_text, created_at, topics(title, icon, topic_tags(tags(name)))")
+    .select("id, topic_id, explanation_text, created_at, topics(title, icon, subject, topic_tags(tags(name)))")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
@@ -74,6 +76,7 @@ export async function cargarDatosGrafo(userId: string) {
     const t = s.topics as unknown as {
       title: string;
       icon: string;
+      subject: string;
       topic_tags: { tags: { name: string } | null }[];
     } | null;
     if (!t) continue;
@@ -87,7 +90,7 @@ export async function cargarDatosGrafo(userId: string) {
       id: s.topic_id,
       titulo: t.title,
       icon: t.icon,
-      materia: TOPIC_ICONS.find((i) => i.id === t.icon)?.category ?? "Estudio",
+      materia: t.subject || "General",
       tags: (t.topic_tags ?? []).map((x) => x.tags?.name).filter(Boolean) as string[],
       sesionId: s.id,
       palabras: palabrasClave(texto),
