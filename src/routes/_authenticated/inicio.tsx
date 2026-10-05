@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { AvatarUsuario } from "@/components/avatar-usuario";
 import { BotonCompartir } from "@/components/boton-compartir";
 import { Chispa, type ChispaSkin } from "@/components/chispa";
+import { GrafoMini } from "@/components/grafo-temas";
 import { InvitacionesRecibidas } from "@/components/invitaciones-recibidas";
 import {
   PixelAplauso,
@@ -470,6 +471,7 @@ function Inicio() {
 
       {/* ── Columna derecha: racha + repasos ⇄ filtros ── */}
       <aside className="space-y-4 lg:sticky lg:top-32 lg:self-start">
+        <GrafoMini />
         {buscando ? (
           <>
             <div className="glass flex items-center justify-between gap-2 p-4">
