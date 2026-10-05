@@ -395,6 +395,7 @@ function Explicacion({
   const [publicando, setPublicando] = useState(false);
   const [activa, setActiva] = useState(pestanas[0]?.id ?? "p1");
   const recRef = useRef<Reconocimiento | null>(null);
+  const [nuevaFuente, setNuevaFuente] = useState("");
 
   const detener = useCallback(() => {
     recRef.current?.stop();
@@ -555,8 +556,6 @@ function Explicacion({
       </main>
     );
   }
-
-  const [nuevaFuente, setNuevaFuente] = useState("");
 
   function agregarFuente() {
     const v = nuevaFuente.trim();
