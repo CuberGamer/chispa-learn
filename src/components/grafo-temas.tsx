@@ -258,8 +258,9 @@ export function GrafoTemas() {
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
-    fg.d3Force("link")?.strength((l: any) => Math.min(1, 0.08 + l.fuerza * 0.08));
-    fg.d3Force("charge")?.strength(-90);
+    fg.d3Force("link")?.strength((l: any) => Math.min(1, 0.08 + l.fuerza * 0.08)).distance(70);
+    fg.d3Force("charge")?.strength(-35).distanceMax(400);
+    fg.d3Force("center")?.strength(0.08);
   });
 
   function buscar(texto: string) {
