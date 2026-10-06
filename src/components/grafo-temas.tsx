@@ -67,7 +67,7 @@ function useMedida<T extends HTMLElement>() {
 }
 
 function dibujarNodo(n: any, ctx: CanvasRenderingContext2D, escala: number, opts: { tenue: boolean; resaltado: boolean; etiqueta: boolean }) {
-  const r = 3 + Math.sqrt(n.grado) * 2.2;
+  const r = 2.4 + Math.sqrt(n.grado) * 1.4;
   ctx.globalAlpha = opts.tenue ? 0.15 : 1;
   if (opts.resaltado) {
     ctx.beginPath();
@@ -258,9 +258,9 @@ export function GrafoTemas() {
   useEffect(() => {
     const fg = fgRef.current;
     if (!fg) return;
-    fg.d3Force("link")?.strength((l: any) => Math.min(1, 0.08 + l.fuerza * 0.08)).distance(70);
-    fg.d3Force("charge")?.strength(-35).distanceMax(400);
-    fg.d3Force("center")?.strength(0.08);
+    fg.d3Force("link")?.strength((l: any) => Math.min(1, 0.06 + l.fuerza * 0.06)).distance(150);
+    fg.d3Force("charge")?.strength(-90).distanceMax(700);
+    fg.d3Force("center")?.strength(0.03);
   });
 
   function buscar(texto: string) {
@@ -489,7 +489,7 @@ export function GrafoTemas() {
               nodePointerAreaPaint={(n: any, color, ctx) => {
                 ctx.fillStyle = color;
                 ctx.beginPath();
-                ctx.arc(n.x, n.y, 6 + Math.sqrt(n.grado) * 2.2, 0, 2 * Math.PI);
+                ctx.arc(n.x, n.y, 5 + Math.sqrt(n.grado) * 1.4, 0, 2 * Math.PI);
                 ctx.fill();
               }}
             />
